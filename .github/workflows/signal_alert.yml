@@ -1,0 +1,32 @@
+name: V4.1 주식 시그널 알림
+
+on:
+  schedule:
+    # 매일 오후 4시 30분 (KST) = UTC 07:30
+    # 장 마감(15:30) 후 데이터 반영 시간 고려
+    - cron: '30 7 * * 1-5'   # 월~금만 실행
+  workflow_dispatch:           # 수동 실행 버튼
+
+jobs:
+  detect-signal:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: |
+          pip install finance-datareader pandas requests
+
+      - name: 시그널 탐지 실행
+        env:
+          TELEGRAM_TOKEN:   ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python signal_detector.py
