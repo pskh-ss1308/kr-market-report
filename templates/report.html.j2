@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>국내 증시 데일리 레포트 · {{ date }}</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{ --ink:#1a1a1c; --sub:#6b6b70; --line:#ececef; --bg:#ffffff;
+         --up:#d23b3b; --down:#1f6fd0; --chip:#f4f4f6; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f6f6f8;color:var(--ink);
+       font-family:'Pretendard',-apple-system,system-ui,sans-serif;
+       line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 64px}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:18px;
+        padding:28px 30px;margin-bottom:18px}
+  header.top{padding:6px 4px 18px}
+  .eyebrow{font-size:13px;color:var(--sub);letter-spacing:.04em;font-weight:600}
+  h1{font-size:24px;margin:6px 0 2px;letter-spacing:-.02em}
+  .date{color:var(--sub);font-size:14px}
+  .snap{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+  .snap .item{background:var(--chip);border-radius:12px;padding:10px 14px;min-width:120px}
+  .snap .k{font-size:12px;color:var(--sub)}
+  .snap .v{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .snap .c{font-size:13px;font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)}
+  .flows{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+         display:flex;flex-direction:column;gap:8px}
+  .flowrow{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+  .flowrow .mkt{font-size:12px;color:var(--sub);font-weight:600;min-width:120px}
+  .flowrow .fv{font-size:13px;font-weight:600;background:var(--chip);
+               border-radius:8px;padding:3px 9px}
+  .report h2{font-size:18px;margin:26px 0 10px;padding-top:18px;
+             border-top:1px solid var(--line);letter-spacing:-.01em}
+  .report h2:first-child{border-top:0;padding-top:0;margin-top:4px}
+  .report ul{padding-left:18px;margin:8px 0}
+  .report li{margin:5px 0}
+  .report p{margin:8px 0}
+  .src{color:var(--sub);font-size:12px}
+  footer{color:var(--sub);font-size:12px;text-align:center;margin-top:8px;line-height:1.7}
+  a{color:#2563c9;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">KOSPI · KOSDAQ DAILY</div>
+    <h1>국내 증시 데일리 분석 레포트</h1>
+    <div class="date">{{ date }} · 장 마감 기준</div>
+  </header>
+
+  <div class="card">
+    <div class="snap">
+      {% for s in snapshot %}
+      <div class="item">
+        <div class="k">{{ s.label }}</div>
+        <div class="v">{{ "{:,.2f}".format(s.close) }}</div>
+        {% if s.change_pct is not none %}
+        <div class="c {{ 'up' if s.change_pct >= 0 else 'down' }}">
+          {{ '+' if s.change_pct >= 0 else '' }}{{ s.change_pct }}%
+        </div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% if flows %}
+    <div class="flows">
+      {% for f in flows %}
+      <div class="flowrow">
+        <span class="mkt">{{ f.market }} 순매수(억)</span>
+        {% for who, v in f.net_eok.items() %}
+        <span class="fv {{ 'up' if v >= 0 else 'down' }}">{{ who }} {{ '+' if v >= 0 else '' }}{{ "{:,.0f}".format(v) }}</span>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card report">
+    {{ body_html | safe }}
+  </div>
+
+  <footer>
+    데이터 출처: KRX(지수·업종) · Yahoo Finance(해외지수·환율) · 명시된 뉴스 매체<br>
+    분석 엔진: Anthropic Claude ({{ model }}) · 자동 생성<br>
+    본 자료는 투자 자문이 아니며 투자 판단과 책임은 투자자 본인에게 있습니다.
+  </footer>
+</div>
+</body>
+</html>
