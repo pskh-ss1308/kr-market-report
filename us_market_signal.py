@@ -5,7 +5,7 @@ us_market_signal.py
 기존 kr-market-report 레포에 추가하는 스크립트
 
 필요 환경변수 (GitHub Secrets):
-  TELEGRAM_BOT_TOKEN  - 기존 봇 토큰 그대로 사용
+  TELEGRAM_TOKEN  - 기존 봇 토큰 그대로 사용
   TELEGRAM_CHAT_ID    - 기존 채팅 ID 그대로 사용
 
 필요 라이브러리:
@@ -28,7 +28,7 @@ US_CANDIDATES = ["NVDA", "AMZN"]
 SOX_TICKER = "^SOX"
 
 # 텔레그램
-TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 # 한국 시간 기준
