@@ -1,15 +1,14 @@
 """
 us_market_signal.py
 ────────────────────────────────────────────────────────
-미국 주식 매수 후보 + SOX 반도체 지수 → 텔레그램 알림
-기존 kr-market-report 레포에 추가하는 스크립트
+미국 + 한국 시장 신호 → 텔레그램 알림
+매일 아침 6:00 KST 자동 실행
 
 필요 환경변수 (GitHub Secrets):
-  TELEGRAM_TOKEN  - 기존 봇 토큰 그대로 사용
-  TELEGRAM_CHAT_ID    - 기존 채팅 ID 그대로 사용
-
-필요 라이브러리:
-  pip install yfinance requests
+  TELEGRAM_TOKEN   - 텔레그램 봇 토큰
+  TELEGRAM_CHAT_ID - 채팅 ID
+  KIS_APP_KEY      - 한국투자증권 API 키 (외국인/기관 순매수용)
+  KIS_APP_SECRET   - 한국투자증권 API 시크릿
 ────────────────────────────────────────────────────────
 """
 
@@ -18,177 +17,331 @@ import requests
 import yfinance as yf
 from datetime import datetime, timezone, timedelta
 
-
 # ── 설정 ──────────────────────────────────────────────
 
-# 매수 후보 종목 (원하는 종목 자유롭게 추가/변경)
+# 미국 매수 후보 종목
 US_CANDIDATES = ["NVDA", "AMZN"]
 
-# SOX 지수 티커 (Yahoo Finance 기준)
-SOX_TICKER = "^SOX"
+# 한국 대형주 (종목코드: 이름)
+KR_CANDIDATES = {
+    "005930": "삼성전자",
+    "000660": "SK하이닉스",
+    "005380": "현대차",
+    "051910": "LG화학",
+    "035420": "NAVER",
+}
 
-# 텔레그램
-TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
+# 한국 반도체 소부장 (장비 + 소재)
+KR_SOBUJANG = {
+    "042700": "한미반도체",
+    "240810": "원익IPS",
+    "036930": "주성엔지니어링",
+    "319660": "피에스케이",
+    "031980": "피에스케이홀딩스",
+    "058470": "리노공업",
+    "084370": "유진테크",
+    "067310": "하나마이크론",
+}
+
+# 한국 장 예측 지표
+KR_PREDICTORS = {
+    "^NQ=F":  "나스닥 선물",
+    "KORU":   "KORU ETF (한국 대형주 3배)",
+    "^SOX":   "SOX 반도체지수",
+    "KRW=X":  "달러/원 환율",
+}
+
+TELEGRAM_TOKEN   = os.environ["TELEGRAM_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+KIS_APP_KEY      = os.environ.get("KIS_APP_KEY", "")
+KIS_APP_SECRET   = os.environ.get("KIS_APP_SECRET", "")
 
-# 한국 시간 기준
 KST = timezone(timedelta(hours=9))
 
 
-# ── 데이터 수집 ───────────────────────────────────────
+# ── KIS API — 접근토큰 발급 ───────────────────────────
 
-def get_price_info(ticker: str) -> dict:
-    """종목/지수의 전일 종가, 등락률, 거래량 반환"""
-    tk = yf.Ticker(ticker)
-    hist = tk.history(period="5d")
+def get_kis_token() -> str:
+    if not KIS_APP_KEY or not KIS_APP_SECRET:
+        return ""
+    url = "https://openapi.koreainvestment.com:9443/oauth2/tokenP"
+    body = {
+        "grant_type": "client_credentials",
+        "appkey": KIS_APP_KEY,
+        "appsecret": KIS_APP_SECRET,
+    }
+    try:
+        resp = requests.post(url, json=body, timeout=10)
+        return resp.json().get("access_token", "")
+    except Exception:
+        return ""
 
-    if hist.empty or len(hist) < 2:
+
+# ── KIS API — 외국인/기관 순매수 ─────────────────────
+
+def get_kr_price_returns(code: str) -> dict:
+    """KRX 종목 1주/1개월 수익률 반환 (yfinance .KS/.KQ)"""
+    for suffix in [".KS", ".KQ"]:
+        try:
+            tk = yf.Ticker(code + suffix)
+            hist = tk.history(period="1mo")
+            if hist.empty or len(hist) < 2:
+                continue
+            last  = hist["Close"].iloc[-1]
+            w_idx = -6 if len(hist) >= 6 else 0
+            ret_1w = (last - hist["Close"].iloc[w_idx]) / hist["Close"].iloc[w_idx] * 100
+            ret_1m = (last - hist["Close"].iloc[0])  / hist["Close"].iloc[0]  * 100
+            return {"ret_1w": ret_1w, "ret_1m": ret_1m, "error": False}
+        except Exception:
+            continue
+    return {"error": True}
+
+
+def get_kr_investor_flow(code: str, token: str) -> dict:
+    """외국인 + 기관 순매수 금액(억원) 반환"""
+    if not token:
+        return {"error": True}
+    url = "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-investor"
+    headers = {
+        "authorization": f"Bearer {token}",
+        "appkey": KIS_APP_KEY,
+        "appsecret": KIS_APP_SECRET,
+        "tr_id": "FHKST01010900",
+    }
+    params = {"fid_cond_mrkt_div_code": "J", "fid_input_iscd": code}
+    try:
+        resp = requests.get(url, headers=headers, params=params, timeout=10)
+        data = resp.json().get("output", [{}])[0]
+        foreign = int(data.get("frgn_ntby_qty", 0))   # 외국인 순매수 수량
+        institution = int(data.get("orgn_ntby_qty", 0)) # 기관 순매수 수량
+        price = float(data.get("stck_prpr", 0))         # 현재가
+        foreign_bil  = round(foreign * price / 1e8, 1)
+        inst_bil     = round(institution * price / 1e8, 1)
+        return {
+            "foreign": foreign_bil,
+            "institution": inst_bil,
+            "both_buying": foreign_bil > 0 and inst_bil > 0,
+            "error": False,
+        }
+    except Exception:
         return {"error": True}
 
-    last_close = hist["Close"].iloc[-1]
-    prev_close = hist["Close"].iloc[-2]
-    change_pct = (last_close - prev_close) / prev_close * 100
 
-    result = {
-        "ticker": ticker,
-        "close": last_close,
-        "change_pct": change_pct,
-        "error": False,
-    }
+# ── Yahoo Finance — 미국 지표 ─────────────────────────
 
-    # 종목은 거래량 및 52주 고저 추가
-    if ticker != SOX_TICKER:
-        volume = hist["Volume"].iloc[-1]
-        avg_volume = hist["Volume"].mean()
-        volume_ratio = volume / avg_volume if avg_volume > 0 else 1.0
+def get_price_info(ticker: str) -> dict:
+    try:
+        tk = yf.Ticker(ticker)
+        hist = tk.history(period="5d")
+        if hist.empty or len(hist) < 2:
+            return {"error": True}
+        last  = hist["Close"].iloc[-1]
+        prev  = hist["Close"].iloc[-2]
+        chg   = (last - prev) / prev * 100
 
-        info = tk.info
-        week52_high = info.get("fiftyTwoWeekHigh", 0)
-        week52_low = info.get("fiftyTwoWeekLow", 0)
-        near_high = (
-            (last_close / week52_high >= 0.90) if week52_high > 0 else False
+        # 1주 / 1개월 수익률
+        try:
+            hist_1m = tk.history(period="1mo")
+            week_ago_idx = -6 if len(hist_1m) >= 6 else 0
+            price_1w_ago = hist_1m["Close"].iloc[week_ago_idx]
+            price_1m_ago = hist_1m["Close"].iloc[0]
+            ret_1w = (last - price_1w_ago) / price_1w_ago * 100
+            ret_1m = (last - price_1m_ago) / price_1m_ago * 100
+        except Exception:
+            ret_1w, ret_1m = None, None
+
+        result = {
+            "ticker": ticker, "close": last, "change_pct": chg,
+            "ret_1w": ret_1w, "ret_1m": ret_1m, "error": False
+        }
+
+        # 미국 개별 종목만 추가 정보
+        if ticker in US_CANDIDATES:
+            vol       = hist["Volume"].iloc[-1]
+            avg_vol   = hist["Volume"].mean()
+            vol_ratio = vol / avg_vol if avg_vol > 0 else 1.0
+            info      = tk.info
+            w52_high  = info.get("fiftyTwoWeekHigh", 0)
+            near_high = (last / w52_high >= 0.90) if w52_high > 0 else False
+            result.update({"volume_ratio": vol_ratio, "near_52w_high": near_high})
+
+        return result
+    except Exception:
+        return {"error": True}
+
+
+# ── 신호 판단 ─────────────────────────────────────────
+
+def sox_signal(chg: float) -> tuple[str, str]:
+    if chg >= 1.5:  return "강세", "🟢"
+    if chg >= -1.0: return "보합", "🟡"
+    return "약세", "🔴"
+
+def krw_signal(close: float) -> tuple[str, str]:
+    """환율 1,380 기준 — 높으면 외국인 이탈 우려"""
+    if close < 1340:   return "원화강세 (외국인 유입 우호적)", "🟢"
+    if close < 1390:   return "보통", "🟡"
+    return "원화약세 (외국인 이탈 주의)", "🔴"
+
+def korea_outlook(predictors: dict) -> tuple[str, str]:
+    """한국 장 전망 종합 판단"""
+    score = 0
+    nq  = predictors.get("^NQ=F", {})
+    koru = predictors.get("KORU", {})
+    sox  = predictors.get("^SOX", {})
+    krw  = predictors.get("KRW=X", {})
+
+    if not nq.get("error")   and nq["change_pct"] > 0:    score += 2
+    if not koru.get("error") and koru["change_pct"] > 0:  score += 3  # 한국 직접 반영
+    if not sox.get("error")  and sox["change_pct"] > 1.5: score += 1
+    if not krw.get("error")  and krw["close"] < 1390:     score += 1
+
+    if score >= 5: return "매수 우호적", "🟢"
+    if score >= 3: return "중립 — 종목별 판단", "🟡"
+    return "관망 권장", "🔴"
+
+
+# ── 메시지 조립 ───────────────────────────────────────
+
+def build_message(
+    sox_data, us_stocks, kr_predictors_data, kr_stocks, kis_token, kr_sobujang
+) -> str:
+    now = datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
+
+    # ─ 미국 섹션 ─
+    if not sox_data.get("error"):
+        sig, icon = sox_signal(sox_data["change_pct"])
+        chg_str = f"{sox_data['change_pct']:+.2f}%"
+        sox_line = f"{icon} SOX 반도체지수: {sox_data['close']:,.0f} ({chg_str}) → {sig}"
+    else:
+        sox_line = "⚪ SOX: 조회 실패"
+
+    us_lines = []
+    for d in us_stocks:
+        if d.get("error"):
+            us_lines.append(f"  • {d['ticker']}: 조회 실패")
+            continue
+        tags = []
+        if d.get("volume_ratio", 0) >= 1.5: tags.append(f"거래량 {d['volume_ratio']:.1f}배")
+        if d.get("near_52w_high"):           tags.append("52주 고점 근처")
+        tag_str = " | ".join(tags) if tags else "신호 없음"
+        sox_weak = not sox_data.get("error") and sox_data["change_pct"] < -1.0
+        caution  = " ⚠️반도체약세" if sox_weak and d["ticker"] in ["NVDA","AMD"] else ""
+        ret_str = ""
+        if d.get("ret_1w") is not None:
+            ret_str = "\n      📈 1주 {:+.1f}% | 1개월 {:+.1f}%".format(d['ret_1w'], d['ret_1m'])
+        us_lines.append(
+            f"  • {d['ticker']}: ${d['close']:,.2f} ({d['change_pct']:+.2f}%)  [{tag_str}]{caution}{ret_str}"
         )
 
-        result.update({
-            "volume_ratio": volume_ratio,
-            "near_52w_high": near_high,
-            "week52_high": week52_high,
-        })
+    # ─ 한국 예측 섹션 ─
+    pred_lines = []
+    for ticker, name in KR_PREDICTORS.items():
+        d = kr_predictors_data.get(ticker, {"error": True})
+        if d.get("error"):
+            pred_lines.append(f"  • {name}: 조회 실패")
+            continue
+        chg = d["change_pct"]
+        if ticker == "KRW=X":
+            sig, icon = krw_signal(d["close"])
+            pred_lines.append(f"  {icon} {name}: {d['close']:,.0f}원  → {sig}")
+        else:
+            icon = "🟢" if chg > 0 else "🔴"
+            ret_str = ""
+            if d.get("ret_1w") is not None:
+                ret_str = f"  (1주 {d['ret_1w']:+.1f}% | 1개월 {d['ret_1m']:+.1f}%)"
+            pred_lines.append(f"  {icon} {name}: {chg:+.2f}%{ret_str}")
 
-    return result
+    outlook, out_icon = korea_outlook(kr_predictors_data)
 
-
-def get_sox_signal(sox_data: dict) -> tuple[str, str]:
-    """SOX 등락률 → 환경 판단 문자열 반환"""
-    if sox_data.get("error"):
-        return "확인불가", "⚪"
-
-    chg = sox_data["change_pct"]
-    if chg >= 1.5:
-        return "강세", "🟢"
-    elif chg >= -1.0:
-        return "보합", "🟡"
+    # ─ 한국 대형주 섹션 ─
+    kr_lines = []
+    if kis_token:
+        for code, name in KR_CANDIDATES.items():
+            flow = get_kr_investor_flow(code, kis_token)
+            ret  = get_kr_price_returns(code)
+            if flow.get("error"):
+                kr_lines.append(f"  • {name}: 조회 실패")
+                continue
+            f_str = f"외국인 {flow['foreign']:+.0f}억"
+            i_str = f"기관 {flow['institution']:+.0f}억"
+            mark  = " ✅" if flow["both_buying"] else ""
+            ret_str = ""
+            if not ret.get("error"):
+                ret_str = "\n      📈 1주 {:+.1f}% | 1개월 {:+.1f}%".format(ret['ret_1w'], ret['ret_1m'])
+            kr_lines.append(f"  • {name}: {f_str} | {i_str}{mark}{ret_str}")
     else:
-        return "약세", "🔴"
+        kr_lines.append("  • KIS API 미설정 — 외국인/기관 데이터 없음")
 
+    us_str   = "\n".join(us_lines)
+    pred_str = "\n".join(pred_lines)
+    kr_str   = "\n".join(kr_lines)
 
-def build_stock_line(data: dict, sox_weak: bool) -> str:
-    """종목 1개의 알림 라인 생성"""
-    if data.get("error"):
-        return f"  • {data['ticker']}: 데이터 조회 실패"
+    return f"""🌏 <b>시장 신호</b> | {now}
 
-    ticker = data["ticker"]
-    close = data["close"]
-    chg = data["change_pct"]
-    vol_ratio = data.get("volume_ratio", 1.0)
-    near_high = data.get("near_52w_high", False)
+━━━━━━━━━━━━━━━━━━━
+🇺🇸 <b>미국 시장</b>
+{sox_line}
 
-    # SOX 약세이고 NVDA 등 반도체 종목이면 주의 태그
-    SOX_RELATED = ["NVDA", "AMD", "INTC", "MU", "AMAT", "KLAC", "LRCX", "AVGO"]
-    caution = " ⚠️반도체약세" if (sox_weak and ticker in SOX_RELATED) else ""
+📈 <b>매수 후보</b>
+{us_str}
 
-    tags = []
-    if vol_ratio >= 1.5:
-        tags.append(f"거래량 {vol_ratio:.1f}배")
-    if near_high:
-        tags.append("52주고점근처")
-    tag_str = " | ".join(tags) if tags else "신호대기"
+━━━━━━━━━━━━━━━━━━━
+🇰🇷 <b>한국 장 예측</b>
+{pred_str}
 
-    chg_sign = "+" if chg >= 0 else ""
-    return (
-        f"  • {ticker}: ${close:,.2f} ({chg_sign}{chg:.2f}%)"
-        f"  [{tag_str}]{caution}"
-    )
+{out_icon} <b>오늘 한국 장 전망: {outlook}</b>
+
+📊 <b>대형주 외국인/기관 수급</b>
+{kr_str}
+✅ = 외국인 + 기관 동시 순매수
+
+━━━━━━━━━━━━━━━━━━━
+🔧 <b>반도체 소부장 수급</b>
+{sobujang_str}
+✅ = 외국인 + 기관 동시 순매수
+
+━━━━━━━━━━━━━━━━━━━
+📌 최종 판단은 본인이 직접 확인 후 결정"""
 
 
 # ── 텔레그램 전송 ──────────────────────────────────────
 
 def send_telegram(message: str):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
+    resp = requests.post(url, json={
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": "HTML",
-    }
-    resp = requests.post(url, json=payload, timeout=10)
+    }, timeout=10)
     resp.raise_for_status()
-    print("텔레그램 전송 완료")
+    print("전송 완료")
 
 
 # ── 메인 ──────────────────────────────────────────────
 
 def main():
-    now_kst = datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
+    print("데이터 수집 중...")
 
-    # 1. SOX 지수 조회
-    sox_data = get_price_info(SOX_TICKER)
-    sox_signal, sox_icon = get_sox_signal(sox_data)
-    sox_weak = (sox_signal == "약세")
+    # 미국 데이터
+    sox_data  = get_price_info("^SOX")
+    us_stocks = [get_price_info(t) for t in US_CANDIDATES]
 
-    if not sox_data.get("error"):
-        sox_chg_sign = "+" if sox_data["change_pct"] >= 0 else ""
-        sox_line = (
-            f"{sox_icon} SOX 반도체지수: "
-            f"{sox_data['close']:,.0f} "
-            f"({sox_chg_sign}{sox_data['change_pct']:.2f}%) "
-            f"→ {sox_signal}"
-        )
-    else:
-        sox_line = "⚪ SOX 반도체지수: 조회 실패"
+    # 한국 예측 지표
+    kr_pred = {t: get_price_info(t) for t in KR_PREDICTORS}
 
-    # 2. 종목 조회
-    stock_lines = []
-    for ticker in US_CANDIDATES:
-        data = get_price_info(ticker)
-        stock_lines.append(build_stock_line(data, sox_weak))
+    # KIS 토큰 + 한국 대형주 수급
+    kis_token = get_kis_token()
 
-    stocks_str = "\n".join(stock_lines)
+    # 소부장 수급
+    sobujang_flows = {}
+    if kis_token:
+        for code, name in KR_SOBUJANG.items():
+            sobujang_flows[code] = (name, get_kr_investor_flow(code, kis_token))
 
-    # 3. 시장 환경 판단 (SOX 기반 간단 로직)
-    if sox_weak:
-        market_env = "🔴 관망 (반도체 약세 — 신규 매수 주의)"
-    elif sox_signal == "강세":
-        market_env = "🟢 매수 가능 (반도체 강세)"
-    else:
-        market_env = "🟡 선별 매수 (보합 — 종목별 판단)"
-
-    # 4. 메시지 조립
-    message = f"""🇺🇸 <b>미국 시장 신호</b> | {now_kst}
-
-{sox_line}
-
-📈 <b>매수 후보</b>
-{stocks_str}
-
-⚠️ <b>오늘 시장 환경</b>
-{market_env}
-
-─────────────────
-💡 SOX 약세 시 반도체 종목 매수 주의
-📌 최종 판단은 본인이 직접 확인 후 결정"""
-
-    print(message)
-    send_telegram(message)
+    msg = build_message(sox_data, us_stocks, kr_pred, KR_CANDIDATES, kis_token, sobujang_flows)
+    print(msg)
+    send_telegram(msg)
 
 
 if __name__ == "__main__":
