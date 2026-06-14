@@ -131,7 +131,7 @@ def _build_insights(insights):
         st = type_style.get(ins["type"], type_style["neutral"])
         items += f'<li style="padding:8px 12px;margin:6px 0;border-radius:4px;{st}">{ins["icon"]} {ins["text"]}</li>\n'
     return f"""<div class="insight-box">
-  <h2>📋 주간 인사이트 (2025)</h2>
+  <h2>📋 주간 인사이트 (최근 4주 기준)</h2>
   <ul style="list-style:none;padding:0;margin:0;">{items}</ul>
 </div>"""
 
