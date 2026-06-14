@@ -1,26 +1,16 @@
-# .github/workflows/us-market-signal.yml
-#
-# 매일 아침 6:00 KST (= UTC 21:00 전날) 자동 실행
-# 기존 kr-market-report 레포의 Secrets 그대로 사용
-#
-# 필요 Secrets (기존 것 그대로):
-#   TELEGRAM_BOT_TOKEN
-#   TELEGRAM_CHAT_ID
-
 name: 🇺🇸 US Market Signal
 
 on:
   schedule:
-    # 매일 21:00 UTC = 한국시간 06:00 KST
     - cron: "0 21 * * *"
-
-  # 수동 실행 버튼 (테스트용)
   workflow_dispatch:
 
 jobs:
   us-signal:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
 
     steps:
       - name: 코드 체크아웃
@@ -41,3 +31,11 @@ jobs:
           KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
           KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
         run: python us_market_signal.py
+
+      - name: data.json 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git diff --staged --quiet || git commit -m "chore: update market data $(date '+%Y-%m-%d %H:%M KST' --date='9 hours')"
+          git push
