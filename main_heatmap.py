@@ -64,7 +64,7 @@ def main():
     print(f"  US 집계 완료: 25년 {len(result_us_25)}행 / 26년 {len(result_us_26)}행")
 
     # ── 인사이트 (2025 기준) ──────────────────────────────
-    insights = generate_insights(heatmap_kr_25, heatmap_us_25)
+    insights = generate_insights(heatmap_kr_26, heatmap_us_26)
     print(f"  인사이트 {len(insights)}개 생성")
 
     # ── HTML 렌더링 ───────────────────────────────────────
