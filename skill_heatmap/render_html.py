@@ -1,11 +1,12 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-코스피/코스닥/US 섹션 + 종목 팝업 + 인사이트 + 진입후보 + 중복종목 서머리
+코스피/코스닥/US 섹션 + 종목 팝업 + 인사이트 + 진입후보 + 중복종목 서머리 + 스킬 필터
 """
 
 from pathlib import Path
 from datetime import date, timedelta
 from collections import defaultdict
+import json
 
 
 COLOR_SCALE = [
@@ -143,8 +144,6 @@ def _next_week_label():
 
 
 def _build_summary(scan_results):
-    """복수 스킬에서 감지된 종목 서머리"""
-    # KR / US 각각 종목별 스킬 목록 집계
     kr_map = defaultdict(lambda: {"skills": [], "price": "", "date": ""})
     us_map = defaultdict(lambda: {"skills": [], "price": "", "date": ""})
 
@@ -162,7 +161,6 @@ def _build_summary(scan_results):
             us_map[name]["price"] = f'${item["close"]}'
             us_map[name]["date"]  = item["signal_date"]
 
-    # 2개 이상 스킬에서 감지된 종목만
     kr_multi = {k: v for k, v in kr_map.items() if len(v["skills"]) >= 2}
     us_multi = {k: v for k, v in us_map.items() if len(v["skills"]) >= 2}
 
@@ -209,6 +207,170 @@ def _build_summary(scan_results):
   {"<div class='summary-market'>🇰🇷 KR</div>" + kr_rows if kr_rows else ""}
   {"<div class='summary-market'>🇺🇸 US</div>" + us_rows if us_rows else ""}
 </div>"""
+
+
+def _build_skill_filter(scan_results):
+    """스킬 선택 필터 + 실시간 종목 검색 탭"""
+    if not scan_results:
+        return ""
+
+    next_week, next_mon = _next_week_label()
+
+    # 전체 종목 데이터를 JSON으로 변환
+    all_items = []
+    for sk, data in scan_results.items():
+        if sk == "best_of_best":
+            continue
+        for item in data.get("kr", []):
+            all_items.append({
+                "name":   item["name"],
+                "price":  f'{item["close"]:,}원',
+                "date":   item["signal_date"],
+                "skill":  sk,
+                "market": "KR",
+            })
+        for item in data.get("us", []):
+            all_items.append({
+                "name":   item["name"],
+                "price":  f'${item["close"]}',
+                "date":   item["signal_date"],
+                "skill":  sk,
+                "market": "US",
+            })
+
+    data_json = json.dumps(all_items, ensure_ascii=False)
+
+    skill_checkboxes = ""
+    for sk in SKILL_ORDER:
+        if sk == "best_of_best":
+            continue
+        tooltip = SKILL_TOOLTIPS.get(sk, "")
+        skill_checkboxes += f"""
+<label class="skill-check" title="{tooltip}">
+  <input type="checkbox" value="{sk}" onchange="filterStocks()">
+  <span>{sk}</span>
+</label>"""
+
+    return f"""<div class="filter-box">
+  <h2>🔍 스킬 필터 — {next_week} 진입 후보 검색 ({next_mon}~ 대응)</h2>
+  <p class="cand-sub">원하는 스킬을 선택하면 해당 조건을 만족하는 종목만 표시됩니다</p>
+
+  <div class="filter-skills">{skill_checkboxes}</div>
+
+  <div class="filter-options">
+    <label class="radio-label">
+      <input type="radio" name="filterMode" value="any" checked onchange="filterStocks()">
+      선택한 스킬 중 1개 이상
+    </label>
+    <label class="radio-label">
+      <input type="radio" name="filterMode" value="all" onchange="filterStocks()">
+      선택한 스킬 모두 충족
+    </label>
+    <button class="clear-btn" onclick="clearFilter()">전체 해제</button>
+    <button class="all-btn" onclick="selectAll()">전체 선택</button>
+  </div>
+
+  <div class="filter-tabs">
+    <button class="tab-btn active" onclick="switchFilterTab('KR', this)">🇰🇷 KR</button>
+    <button class="tab-btn" onclick="switchFilterTab('US', this)">🇺🇸 US</button>
+    <button class="tab-btn" onclick="switchFilterTab('ALL', this)">전체</button>
+  </div>
+
+  <div id="filterResult" class="filter-result">
+    <p style="color:#666;font-size:11px;padding:12px">스킬을 선택해주세요</p>
+  </div>
+</div>
+
+<script>
+const STOCK_DATA = {data_json};
+let currentMarket = 'KR';
+
+function switchFilterTab(market, btn) {{
+  currentMarket = market;
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterStocks();
+}}
+
+function filterStocks() {{
+  const checked = [...document.querySelectorAll('.filter-skills input:checked')].map(c => c.value);
+  const mode    = document.querySelector('input[name="filterMode"]:checked').value;
+
+  if (checked.length === 0) {{
+    document.getElementById('filterResult').innerHTML = '<p style="color:#666;font-size:11px;padding:12px">스킬을 선택해주세요</p>';
+    return;
+  }}
+
+  // 종목별로 스킬 목록 집계
+  const stockMap = {{}};
+  STOCK_DATA.forEach(item => {{
+    if (currentMarket !== 'ALL' && item.market !== currentMarket) return;
+    if (!stockMap[item.name]) {{
+      stockMap[item.name] = {{ skills: [], price: item.price, date: item.date, market: item.market }};
+    }}
+    stockMap[item.name].skills.push(item.skill);
+  }});
+
+  // 필터링
+  const filtered = Object.entries(stockMap).filter(([name, v]) => {{
+    if (mode === 'any') return checked.some(sk => v.skills.includes(sk));
+    if (mode === 'all') return checked.every(sk => v.skills.includes(sk));
+    return false;
+  }});
+
+  // 정렬: 감지 스킬 수 많은 순
+  filtered.sort((a, b) => b[1].skills.length - a[1].skills.length);
+
+  if (filtered.length === 0) {{
+    document.getElementById('filterResult').innerHTML = '<p style="color:#666;font-size:11px;padding:12px">해당 조건을 만족하는 종목이 없습니다</p>';
+    return;
+  }}
+
+  let html = `<div style="font-size:10px;color:#888;margin-bottom:8px;">${{filtered.length}}개 종목 검색됨</div>`;
+  html += '<table style="width:100%;border-collapse:collapse;">';
+  html += '<thead><tr style="font-size:10px;color:#666;border-bottom:1px solid #1e2530;">';
+  html += '<th style="text-align:left;padding:4px 6px;">종목</th>';
+  html += '<th style="text-align:left;padding:4px 6px;">현재가</th>';
+  html += '<th style="text-align:left;padding:4px 6px;">감지 스킬</th>';
+  html += '<th style="text-align:right;padding:4px 6px;">신호일</th>';
+  html += '</tr></thead><tbody>';
+
+  filtered.forEach(([name, v]) => {{
+    const cnt     = v.skills.filter(s => checked.includes(s)).length;
+    const badgeStyle = cnt >= 3 ? 'background:#0d5c2e;color:#a8f0c6' :
+                       cnt >= 2 ? 'background:#1a7a40;color:#b8f5cd' :
+                                  'background:#2a9a55;color:#c8fad8';
+    const flag = v.market === 'KR' ? '🇰🇷' : '🇺🇸';
+    const skills = v.skills.map(s => checked.includes(s)
+      ? `<span style="background:#2a9a55;color:#fff;border-radius:3px;padding:1px 5px;font-size:9px;margin:1px;">${{s}}</span>`
+      : `<span style="background:#333;color:#888;border-radius:3px;padding:1px 5px;font-size:9px;margin:1px;">${{s}}</span>`
+    ).join(' ');
+
+    html += `<tr style="border-bottom:1px solid #1a1f2e;">
+      <td style="padding:5px 6px;font-size:11px;font-weight:500;">
+        ${{flag}} ${{name}}
+        <span style="border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;${{badgeStyle}}">${{cnt}}개</span>
+      </td>
+      <td style="padding:5px 6px;font-size:11px;color:#4caf7d;">${{v.price}}</td>
+      <td style="padding:5px 6px;">${{skills}}</td>
+      <td style="padding:5px 6px;font-size:10px;color:#666;text-align:right;">${{v.date}}</td>
+    </tr>`;
+  }});
+
+  html += '</tbody></table>';
+  document.getElementById('filterResult').innerHTML = html;
+}}
+
+function clearFilter() {{
+  document.querySelectorAll('.filter-skills input').forEach(c => c.checked = false);
+  filterStocks();
+}}
+
+function selectAll() {{
+  document.querySelectorAll('.filter-skills input').forEach(c => c.checked = true);
+  filterStocks();
+}}
+</script>"""
 
 
 def _build_candidates(scan_results):
@@ -264,8 +426,8 @@ def _build_candidates(scan_results):
         return ""
 
     return f"""<div class="candidate-box">
-  <h2>🎯 {next_week} 진입 후보 ({next_mon}~ 대응)</h2>
-  <p class="cand-sub">현재 시점 기준 각 스킬 조건을 만족하는 종목 · 다음 주 월요일({next_mon}) 진입 검토</p>
+  <h2>🎯 {next_week} 전체 진입 후보 ({next_mon}~ 대응)</h2>
+  <p class="cand-sub">현재 시점 기준 각 스킬 조건을 만족하는 종목 전체 목록</p>
   <div class="table-wrap">
   <table class="cand-table">
     <thead><tr>
@@ -296,6 +458,7 @@ def render(
 
     insight_html   = _build_insights(insights or [])
     summary_html   = _build_summary(scan_results or {})
+    filter_html    = _build_skill_filter(scan_results or {})
     candidate_html = _build_candidates(scan_results or {})
 
     html = f"""<!DOCTYPE html>
@@ -331,8 +494,6 @@ def render(
   .skill-name:hover::after {{ content: attr(data-tip); position: absolute; left: 0; top: 18px; background: #1e2530; color: #ddd; font-size: 10px; line-height: 1.5; padding: 6px 10px; border-radius: 4px; border: 1px solid #444; white-space: normal; width: 240px; z-index: 99; }}
   .insight-box {{ margin-top: 8px; margin-bottom: 24px; }}
   .insight-box li {{ font-size: 11px; line-height: 1.6; color: #ddd; }}
-
-  /* 복수 스킬 서머리 */
   .summary-box {{ margin-top: 32px; margin-bottom: 24px; }}
   .summary-market {{ font-size: 11px; color: #888; margin: 10px 0 6px; }}
   .summary-item {{ display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 3px 0; border-radius: 4px; background: #1a1f2e; flex-wrap: wrap; }}
@@ -342,7 +503,22 @@ def render(
   .summary-skills {{ font-size: 10px; color: #888; flex: 1; }}
   .summary-date {{ font-size: 10px; color: #666; white-space: nowrap; }}
 
-  /* 진입 후보 */
+  /* 스킬 필터 */
+  .filter-box {{ margin-top: 32px; margin-bottom: 24px; background: #111827; border: 1px solid #1e2530; border-radius: 8px; padding: 16px; }}
+  .filter-skills {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }}
+  .skill-check {{ display: flex; align-items: center; gap: 4px; cursor: pointer; background: #1a1f2e; border: 1px solid #333; border-radius: 4px; padding: 4px 10px; font-size: 11px; color: #ccc; }}
+  .skill-check input {{ accent-color: #2a9a55; cursor: pointer; }}
+  .skill-check:has(input:checked) {{ border-color: #2a9a55; color: #fff; background: #0d2e1a; }}
+  .filter-options {{ display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }}
+  .radio-label {{ display: flex; align-items: center; gap: 4px; font-size: 11px; color: #ccc; cursor: pointer; }}
+  .radio-label input {{ accent-color: #2a9a55; }}
+  .clear-btn, .all-btn {{ padding: 3px 10px; border-radius: 4px; border: 1px solid #444; background: #1a1f2e; color: #888; font-size: 10px; cursor: pointer; }}
+  .clear-btn:hover, .all-btn:hover {{ border-color: #2a9a55; color: #2a9a55; }}
+  .filter-tabs {{ display: flex; gap: 6px; margin-bottom: 12px; }}
+  .tab-btn {{ padding: 5px 16px; border-radius: 4px; border: 1px solid #333; background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer; }}
+  .tab-btn.active {{ background: #2a9a55; color: #fff; border-color: #2a9a55; }}
+  .filter-result {{ background: #0e1117; border-radius: 4px; padding: 8px; min-height: 60px; overflow-x: auto; }}
+
   .candidate-box {{ margin-top: 32px; margin-bottom: 24px; }}
   .cand-sub {{ font-size: 10px; color: #888; margin-bottom: 10px; }}
   .cand-table td {{ vertical-align: top; padding: 6px 4px; border-bottom: 1px solid #1e2530; }}
@@ -354,8 +530,6 @@ def render(
   .cand-price {{ color: #4caf7d; margin-left: 4px; font-size: 10px; }}
   .cand-date {{ color: #888; margin-left: 4px; font-size: 10px; }}
   .generated {{ font-size: 10px; color: #555; margin-top: 12px; }}
-
-  /* 팝업 */
   .modal-bg {{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }}
   .modal-bg.active {{ display:flex; align-items:center; justify-content:center; }}
   .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }}
@@ -390,6 +564,7 @@ def render(
 
 {insight_html}
 {summary_html}
+{filter_html}
 {candidate_html}
 
 <p class="generated">생성일: {generated} · FinanceDataReader 기반 자동 계산</p>
