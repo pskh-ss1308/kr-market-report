@@ -1,10 +1,10 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-2025/2026 탭 구분 / 종목명 팝업 / 툴팁 / 인사이트
+코스피/코스닥/US 섹션 + 2025/2026 탭 + 종목 팝업 + 인사이트 + 진입후보
 """
 
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 
 
 COLOR_SCALE = [
@@ -45,18 +45,16 @@ def _color(v):
     return "#5c0000", "#ffacac"
 
 
-def _cell_html(data, skill, week, tab_id):
+def _cell_html(data, skill, week):
     if not data:
         return "<td></td>"
     v       = data["mean"]
     n       = data["n"]
     wr      = data["win_rate"]
-    tickers = data.get("tickers", "")
+    tickers = data.get("tickers", "").replace("'", "\\'")
     sign    = "+" if v >= 0 else ""
     bg, fg  = _color(v)
-    # 종목 문자열에서 괄호 이스케이프
-    tickers_escaped = tickers.replace("'", "\\'")
-    onclick = f"showTickers('{skill}','{week}','{tickers_escaped}')"
+    onclick = f"showTickers('{skill}','{week}','{tickers}')"
     return (
         f'<td><span class="cell" style="background:{bg};color:{fg};cursor:pointer" onclick="{onclick}">'
         f'<span class="ret">{sign}{v:.1f}</span>'
@@ -65,7 +63,7 @@ def _cell_html(data, skill, week, tab_id):
     )
 
 
-def _build_table(heatmap_data, benchmark, hold_weeks, bm_label, tab_id):
+def _build_table(heatmap_data, benchmark, hold_weeks, bm_label):
     used_weeks = set()
     for sk_data in heatmap_data.values():
         used_weeks.update(sk_data.keys())
@@ -104,7 +102,7 @@ def _build_table(heatmap_data, benchmark, hold_weeks, bm_label, tab_id):
             f'<span class="tip-icon">?</span></span></td>'
         )
         for w in week_cols:
-            cells += _cell_html(data.get(w), sk, w, tab_id)
+            cells += _cell_html(data.get(w), sk, w)
         rows += f"<tr>{cells}</tr>\n"
 
     return f"""<div class="table-wrap">
@@ -116,6 +114,19 @@ def _build_table(heatmap_data, benchmark, hold_weeks, bm_label, tab_id):
   </tbody>
 </table>
 </div>"""
+
+
+def _build_section(title, tab_id, data_25, data_26, benchmark, hold_weeks, bm_label):
+    t25 = _build_table(data_25, benchmark, hold_weeks, bm_label)
+    t26 = _build_table(data_26, {}, set(), bm_label)
+    return f"""
+<h1>{title}</h1>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('{tab_id}','2025',this)">2025년</button>
+  <button class="tab-btn" onclick="switchTab('{tab_id}','2026',this)">2026년</button>
+</div>
+<div id="{tab_id}-2025" class="tab-content active">{t25}</div>
+<div id="{tab_id}-2026" class="tab-content">{t26}</div>"""
 
 
 def _build_insights(insights):
@@ -136,28 +147,112 @@ def _build_insights(insights):
 </div>"""
 
 
+def _next_week_label():
+    today    = date.today()
+    next_mon = today + timedelta(days=(7 - today.weekday()))
+    week_num = next_mon.isocalendar().week
+    return f"W{week_num:02d}", next_mon.strftime("%m/%d")
+
+
+def _build_candidates(scan_results):
+    if not scan_results:
+        return ""
+
+    next_week, next_mon = _next_week_label()
+
+    rows = ""
+    for sk, data in scan_results.items():
+        kr_items = data.get("kr", [])
+        us_items = data.get("us", [])
+        if not kr_items and not us_items:
+            continue
+
+        tooltip = SKILL_TOOLTIPS.get(sk, "")
+        ko_name = data.get("ko_name", sk)
+
+        kr_html = ""
+        for item in kr_items:
+            kr_html += (
+                f'<span class="cand-item">'
+                f'{item["name"]} '
+                f'<span class="cand-price">{item["close"]:,}원</span>'
+                f'<span class="cand-date">{item["signal_date"]}</span>'
+                f'</span>'
+            )
+
+        us_html = ""
+        for item in us_items:
+            us_html += (
+                f'<span class="cand-item">'
+                f'{item["name"]} '
+                f'<span class="cand-price">${item["close"]}</span>'
+                f'<span class="cand-date">{item["signal_date"]}</span>'
+                f'</span>'
+            )
+
+        rows += f"""<tr>
+  <td class="cand-skill">
+    <span class="skill-name" data-tip="{tooltip}">{sk}
+      <span class="tip-icon">?</span>
+    </span>
+    <span class="cand-ko">{ko_name}</span>
+  </td>
+  <td class="cand-tickers">
+    {"<div class='cand-market-label'>🇰🇷 KR</div>" + kr_html if kr_html else ""}
+    {"<div class='cand-market-label'>🇺🇸 US</div>" + us_html if us_html else ""}
+  </td>
+</tr>"""
+
+    if not rows:
+        return ""
+
+    return f"""<div class="candidate-box">
+  <h2>🎯 {next_week} 진입 후보 ({next_mon}~ 대응)</h2>
+  <p class="cand-sub">현재 시점 기준 각 스킬 조건을 만족하는 종목 · 다음 주 월요일({next_mon}) 진입 검토</p>
+  <div class="table-wrap">
+  <table class="cand-table">
+    <thead><tr>
+      <th style="text-align:left;min-width:150px;padding-left:6px;">스킬</th>
+      <th style="text-align:left;">후보 종목</th>
+    </tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+</div>"""
+
+
 def render(
-    heatmap_kr_25,
-    heatmap_kr_26,
-    output_path   = "docs/heatmap.html",
-    benchmark_kr  = None,
-    heatmap_us_25 = None,
-    heatmap_us_26 = None,
-    insights      = None,
+    heatmap_kospi_25,
+    heatmap_kospi_26,
+    heatmap_kosdaq_25,
+    heatmap_kosdaq_26,
+    heatmap_us_25,
+    heatmap_us_26,
+    output_path  = "docs/heatmap.html",
+    benchmark_kr = None,
+    insights     = None,
+    scan_results = None,
 ):
     generated = date.today().strftime("%Y-%m-%d")
 
-    kr25 = _build_table(heatmap_kr_25, benchmark_kr, HOLD_WEEKS, "📋 코스피 최악일낙폭", "kr25")
-    kr26 = _build_table(heatmap_kr_26, {}, set(), "📋 코스피 최악일낙폭", "kr26")
+    kospi_section  = _build_section(
+        "🇰🇷 KR 코스피 — 주간 수익률 매트릭스", "kospi",
+        heatmap_kospi_25, heatmap_kospi_26,
+        benchmark_kr, HOLD_WEEKS, "📋 코스피 최악일낙폭"
+    )
+    kosdaq_section = _build_section(
+        "🇰🇷 KR 코스닥 — 주간 수익률 매트릭스", "kosdaq",
+        heatmap_kosdaq_25, heatmap_kosdaq_26,
+        {}, set(), "📋 코스닥 최악일낙폭"
+    )
+    us_section     = _build_section(
+        "🇺🇸 US — 주간 수익률 매트릭스", "us",
+        heatmap_us_25, heatmap_us_26,
+        {}, set(), "📋 S&P500 최악일낙폭"
+    )
 
-    us25_html = ""
-    us26_html = ""
-    if heatmap_us_25:
-        us25_html = _build_table(heatmap_us_25, {}, set(), "📋 S&P500 최악일낙폭", "us25")
-    if heatmap_us_26:
-        us26_html = _build_table(heatmap_us_26, {}, set(), "📋 S&P500 최악일낙폭", "us26")
-
-    insight_html = _build_insights(insights or [])
+    insight_html   = _build_insights(insights or [])
+    candidate_html = _build_candidates(scan_results or {})
 
     html = f"""<!DOCTYPE html>
 <html lang="ko">
@@ -170,21 +265,15 @@ def render(
   body {{ background: #0e1117; color: #e0e0e0; font-family: 'Pretendard', sans-serif; font-size: 12px; padding: 20px; }}
   h1 {{ font-size: 15px; font-weight: 500; margin-bottom: 10px; margin-top: 28px; }}
   h1:first-of-type {{ margin-top: 0; }}
-  h2 {{ font-size: 13px; font-weight: 500; margin-bottom: 10px; color: #ccc; }}
+  h2 {{ font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #ccc; }}
   .sub {{ font-size: 10px; color: #888; margin-bottom: 16px; line-height: 1.7; }}
   .sub b {{ color: #e85555; }}
-
-  /* 탭 */
   .tabs {{ display: flex; gap: 6px; margin-bottom: 12px; }}
-  .tab-btn {{
-    padding: 5px 16px; border-radius: 4px; border: 1px solid #333;
-    background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer;
-  }}
+  .tab-btn {{ padding: 5px 16px; border-radius: 4px; border: 1px solid #333; background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer; }}
   .tab-btn.active {{ background: #2a9a55; color: #fff; border-color: #2a9a55; }}
   .tab-content {{ display: none; }}
   .tab-content.active {{ display: block; }}
-
-  .table-wrap {{ overflow-x: auto; margin-bottom: 32px; }}
+  .table-wrap {{ overflow-x: auto; margin-bottom: 24px; }}
   table {{ border-collapse: collapse; width: 100%; }}
   th, td {{ padding: 2px 3px; text-align: center; vertical-align: middle; }}
   .skill-col {{ text-align: left; min-width: 170px; padding-left: 6px; color: #ccc; font-size: 11px; }}
@@ -203,9 +292,17 @@ def render(
   .skill-name:hover::after {{ content: attr(data-tip); position: absolute; left: 0; top: 18px; background: #1e2530; color: #ddd; font-size: 10px; line-height: 1.5; padding: 6px 10px; border-radius: 4px; border: 1px solid #444; white-space: normal; width: 240px; z-index: 99; }}
   .insight-box {{ margin-top: 8px; margin-bottom: 24px; }}
   .insight-box li {{ font-size: 11px; line-height: 1.6; color: #ddd; }}
+  .candidate-box {{ margin-top: 32px; margin-bottom: 24px; }}
+  .cand-sub {{ font-size: 10px; color: #888; margin-bottom: 10px; }}
+  .cand-table td {{ vertical-align: top; padding: 6px 4px; border-bottom: 1px solid #1e2530; }}
+  .cand-skill {{ min-width: 150px; padding-left: 6px !important; }}
+  .cand-ko {{ display: block; font-size: 10px; color: #888; margin-top: 2px; }}
+  .cand-tickers {{ text-align: left !important; }}
+  .cand-market-label {{ font-size: 10px; color: #888; margin: 4px 0 2px; }}
+  .cand-item {{ display: inline-block; background: #1a2535; border-radius: 4px; padding: 3px 8px; margin: 2px; font-size: 11px; }}
+  .cand-price {{ color: #4caf7d; margin-left: 4px; font-size: 10px; }}
+  .cand-date {{ color: #888; margin-left: 4px; font-size: 10px; }}
   .generated {{ font-size: 10px; color: #555; margin-top: 12px; }}
-
-  /* 팝업 */
   .modal-bg {{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }}
   .modal-bg.active {{ display:flex; align-items:center; justify-content:center; }}
   .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }}
@@ -229,26 +326,14 @@ def render(
   · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 마우스 올리면 설명 · 셀 클릭 시 종목 리스트
 </div>
 
-<h1>🇰🇷 KR — 주간 수익률 매트릭스</h1>
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('kr','2025',this)">2025년</button>
-  <button class="tab-btn" onclick="switchTab('kr','2026',this)">2026년</button>
-</div>
-<div id="kr-2025" class="tab-content active">{kr25}</div>
-<div id="kr-2026" class="tab-content">{kr26}</div>
-
-<h1>🇺🇸 US — 주간 수익률 매트릭스</h1>
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('us','2025',this)">2025년</button>
-  <button class="tab-btn" onclick="switchTab('us','2026',this)">2026년</button>
-</div>
-<div id="us-2025" class="tab-content active">{us25_html}</div>
-<div id="us-2026" class="tab-content">{us26_html}</div>
-
+{kospi_section}
+{kosdaq_section}
+{us_section}
 {insight_html}
+{candidate_html}
+
 <p class="generated">생성일: {generated} · FinanceDataReader 기반 자동 계산</p>
 
-<!-- 종목 팝업 -->
 <div class="modal-bg" id="modalBg" onclick="closeModal(event)">
   <div class="modal" id="modal">
     <div class="modal-title" id="modalTitle"></div>
@@ -258,10 +343,8 @@ def render(
 
 <script>
 function switchTab(market, year, btn) {{
-  // 같은 market의 탭 버튼 전부 비활성화
   btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // 콘텐츠 전환
   document.getElementById(market+'-2025').classList.remove('active');
   document.getElementById(market+'-2026').classList.remove('active');
   document.getElementById(market+'-'+year).classList.add('active');
@@ -272,10 +355,8 @@ function showTickers(skill, week, raw) {{
   document.getElementById('modalTitle').innerHTML =
     '<span class="modal-close" onclick="document.getElementById(\\'modalBg\\').classList.remove(\\'active\\')">✕</span>' +
     '<b>' + skill + '</b> · ' + week + ' <span style="color:#888;font-size:10px;">(' + items.length + '개 종목)</span>';
-
   let html = '';
   items.forEach(item => {{
-    // 형식: 삼성전자(005930)(+15.2%,12/22)
     const m = item.match(/^(.+?)\\(([+-]?[\\d.]+)%,([\\d/]+)\\)$/);
     if (!m) return;
     const [, name, ret, dt] = m;
