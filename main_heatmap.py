@@ -41,7 +41,9 @@ def main():
     tickers_kospi = kis.get_ticker_list("KOSPI")
     ohlcv_kospi   = kis.batch_ohlcv(tickers_kospi, start, end, market="KR")
     print(f"  코스피 조회 완료: {len(ohlcv_kospi)}개 종목")
-    heatmap_kospi = pivot_for_heatmap(run_skill_heatmap(ohlcv_kospi, year=this_year, name_map=name_map_kr))
+    result_kospi  = run_skill_heatmap(ohlcv_kospi, year=this_year, name_map=name_map_kr)
+    print(f"  코스피 집계: {len(result_kospi)}행, 주차: {sorted(result_kospi['week'].unique()) if not result_kospi.empty else []}")
+    heatmap_kospi = pivot_for_heatmap(result_kospi)
 
     # ── KR 코스닥 ─────────────────────────────────────────
     print("[2/3] KR 코스닥 데이터 수집 중...")
