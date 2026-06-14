@@ -8,7 +8,6 @@ import time
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 BASE_URL = "https://openapi.koreainvestment.com:9443"
 
@@ -19,7 +18,7 @@ class KisAPI:
         self._token     = None
         self._token_exp = None
 
-    def _get_token(self) -> str:
+    def _get_token(self):
         if self._token and datetime.now() < self._token_exp:
             return self._token
         resp = requests.post(
@@ -37,7 +36,7 @@ class KisAPI:
         self._token_exp = datetime.now() + timedelta(hours=23)
         return self._token
 
-    def _headers(self, tr_id: str) -> dict:
+    def _headers(self, tr_id):
         return {
             "Content-Type":  "application/json; charset=utf-8",
             "authorization": f"Bearer {self._get_token()}",
@@ -47,7 +46,7 @@ class KisAPI:
             "custtype":      "P",
         }
 
-    def get_daily_ohlcv(self, ticker: str, start: str, end: str) -> pd.DataFrame:
+    def get_daily_ohlcv(self, ticker, start, end):
         url    = f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
         params = {
             "FID_COND_MRKT_DIV_CODE": "J",
@@ -76,7 +75,7 @@ class KisAPI:
         df = df.sort_values("date").reset_index(drop=True)
         return df
 
-    def get_ticker_list(self, market: str = "KOSPI") -> list[str]:
+    def get_ticker_list(self, market="KOSPI"):
         SAMPLE_KOSPI = [
             "005930","000660","051910","005380","035420",
             "000270","068270","105560","028260","012330",
@@ -93,4 +92,19 @@ class KisAPI:
             "066970","950130","031980","241560","036930",
             "293490","263920","240810","122870","041510",
         ]
-        return SAMPLE_KOSPI if market == "KOSPI" else
+        return SAMPLE_KOSPI if market == "KOSPI" else SAMPLE_KOSDAQ
+
+    def batch_ohlcv(self, tickers, start, end, delay=0.2):
+        result = {}
+        for i, ticker in enumerate(tickers):
+            try:
+                df = self.get_daily_ohlcv(ticker, start, end)
+                if not df.empty:
+                    result[ticker] = df
+            except Exception as e:
+                print(f"[WARN] {ticker}: {e}")
+            if i % 20 == 19:
+                time.sleep(1.0)
+            else:
+                time.sleep(delay)
+        return result
