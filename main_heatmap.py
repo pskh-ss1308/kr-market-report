@@ -1,6 +1,6 @@
 """
 메인 실행 스크립트
-usage: python main.py [--year 2025] [--market KOSPI]
+usage: python main_heatmap.py [--year 2025] [--market KOSPI]
 """
 
 import argparse
@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--year",   type=int, default=datetime.date.today().year)
     parser.add_argument("--market", type=str, default="KOSPI")
-    parser.add_argument("--output", type=str, default="output/heatmap.html")
+    parser.add_argument("--output", type=str, default="docs/heatmap.html")
     args = parser.parse_args()
 
     print(f"[START] {args.market} {args.year}년 스킬 히트맵 생성")
