@@ -1,0 +1,45 @@
+name: 트레이딩 스킬 주간 히트맵
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-heatmap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 히트맵 생성
+        env:
+          KIS_APP_KEY:    ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+        run: python main_heatmap.py --market KOSPI
+
+      - name: 결과물 커밋 & 푸시
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/heatmap.html
+          git diff --cached --quiet || git commit -m "chore: 히트맵 자동 업데이트 $(date +'%Y-W%V')"
+          git push
+
+      - name: Pages 배포 알림
+        run: |
+          echo "✅ 히트맵 업데이트 완료"
+          echo "📊 https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/heatmap.html"
