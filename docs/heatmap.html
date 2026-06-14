@@ -31,6 +31,18 @@
   .skill-name:hover::after { content: attr(data-tip); position: absolute; left: 0; top: 18px; background: #1e2530; color: #ddd; font-size: 10px; line-height: 1.5; padding: 6px 10px; border-radius: 4px; border: 1px solid #444; white-space: normal; width: 240px; z-index: 99; }
   .insight-box { margin-top: 8px; margin-bottom: 24px; }
   .insight-box li { font-size: 11px; line-height: 1.6; color: #ddd; }
+
+  /* 복수 스킬 서머리 */
+  .summary-box { margin-top: 32px; margin-bottom: 24px; }
+  .summary-market { font-size: 11px; color: #888; margin: 10px 0 6px; }
+  .summary-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 3px 0; border-radius: 4px; background: #1a1f2e; flex-wrap: wrap; }
+  .summary-badge { border-radius: 3px; padding: 2px 6px; font-size: 10px; font-weight: 500; white-space: nowrap; }
+  .summary-name { font-size: 11px; font-weight: 500; color: #e0e0e0; min-width: 140px; }
+  .summary-price { font-size: 10px; color: #4caf7d; min-width: 70px; }
+  .summary-skills { font-size: 10px; color: #888; flex: 1; }
+  .summary-date { font-size: 10px; color: #666; white-space: nowrap; }
+
+  /* 진입 후보 */
   .candidate-box { margin-top: 32px; margin-bottom: 24px; }
   .cand-sub { font-size: 10px; color: #888; margin-bottom: 10px; }
   .cand-table td { vertical-align: top; padding: 6px 4px; border-bottom: 1px solid #1e2530; }
@@ -42,6 +54,8 @@
   .cand-price { color: #4caf7d; margin-left: 4px; font-size: 10px; }
   .cand-date { color: #888; margin-left: 4px; font-size: 10px; }
   .generated { font-size: 10px; color: #555; margin-top: 12px; }
+
+  /* 팝업 */
   .modal-bg { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }
   .modal-bg.active { display:flex; align-items:center; justify-content:center; }
   .modal { background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }
@@ -119,6 +133,294 @@
 <li style="padding:8px 12px;margin:6px 0;border-radius:4px;border-left:3px solid #d84040; background:#2e0d0d;">📉 최신 집계 주차(W23) 전략 평균 -10.0% — 시장 전반 약세. 현금 비중 확대 고려.</li>
 <li style="padding:8px 12px;margin:6px 0;border-radius:4px;border-left:3px solid #2a9a55; background:#0d2e1a;">💡 다음 주 전략 제안: VCP(변동성수축) 신호 발생 종목 위주로 대응. 승률 55% 이상 + 양수 수익률 유지 중.</li>
 </ul>
+</div>
+<div class="summary-box">
+  <h2>⭐ 복수 스킬 동시 감지 종목</h2>
+  <p class="cand-sub">2개 이상 스킬에서 동시에 신호가 발생한 종목 — 신뢰도 높은 진입 후보</p>
+  <div class='summary-market'>🇰🇷 KR</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">HPSP(403870)</span>
+  <span class="summary-price">71,500원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">NAVER(035420)</span>
+  <span class="summary-price">247,000원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">SK스퀘어(402340)</span>
+  <span class="summary-price">1,358,000원</span>
+  <span class="summary-skills">sector_rotation · pre_surge · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">기가비스(420770)</span>
+  <span class="summary-price">146,000원</span>
+  <span class="summary-skills">sector_rotation · pre_surge · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">로보스타(090360)</span>
+  <span class="summary-price">113,200원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">브이엠(089970)</span>
+  <span class="summary-price">97,000원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">신한지주(055550)</span>
+  <span class="summary-price">99,600원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">심텍(222800)</span>
+  <span class="summary-price">130,100원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">원익IPS(240810)</span>
+  <span class="summary-price">183,300원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">유진테크(084370)</span>
+  <span class="summary-price">196,100원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">주성엔지니어링(036930)</span>
+  <span class="summary-price">231,000원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">테스(095610)</span>
+  <span class="summary-price">182,200원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">테크윙(089030)</span>
+  <span class="summary-price">65,300원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">티에스이(131290)</span>
+  <span class="summary-price">270,500원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">피에스케이(319660)</span>
+  <span class="summary-price">169,900원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#0d5c2e;color:#a8f0c6">4개 스킬</span>
+  <span class="summary-name">피에스케이홀딩스(031980)</span>
+  <span class="summary-price">152,300원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">KB금융(105560)</span>
+  <span class="summary-price">161,200원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · narrative_momentum</span>
+  <span class="summary-date">06/05</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">SK텔레콤(017670)</span>
+  <span class="summary-price">103,000원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · value_chain</span>
+  <span class="summary-date">06/10</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">SK하이닉스(000660)</span>
+  <span class="summary-price">2,150,000원</span>
+  <span class="summary-skills">sector_rotation · pre_surge · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">네이처셀(007390)</span>
+  <span class="summary-price">32,000원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">대덕전자(353200)</span>
+  <span class="summary-price">165,200원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">두산로보틱스(454910)</span>
+  <span class="summary-price">110,400원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/08</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">삼성화재(000810)</span>
+  <span class="summary-price">654,000원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">성호전자(043260)</span>
+  <span class="summary-price">46,650원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">신세계(004170)</span>
+  <span class="summary-price">695,000원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">에이치브이엠(295310)</span>
+  <span class="summary-price">103,400원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">이오테크닉스(039030)</span>
+  <span class="summary-price">612,000원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">카카오뱅크(323410)</span>
+  <span class="summary-price">23,750원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">코미코(183300)</span>
+  <span class="summary-price">124,900원</span>
+  <span class="summary-skills">sector_rotation · narrative_momentum · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#1a7a40;color:#b8f5cd">3개 스킬</span>
+  <span class="summary-name">파크시스템스(140860)</span>
+  <span class="summary-price">339,500원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum · pre_surge</span>
+  <span class="summary-date">06/05</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">LG이노텍(011070)</span>
+  <span class="summary-price">1,036,000원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">LG전자(066570)</span>
+  <span class="summary-price">225,500원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">기업은행(024110)</span>
+  <span class="summary-price">21,800원</span>
+  <span class="summary-skills">sector_rotation · pre_surge</span>
+  <span class="summary-date">06/10</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">디앤디파마텍(347850)</span>
+  <span class="summary-price">87,500원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">삼성물산(028260)</span>
+  <span class="summary-price">432,000원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/05</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">삼성생명(032830)</span>
+  <span class="summary-price">385,500원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">삼성전기(009150)</span>
+  <span class="summary-price">1,714,000원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">서진시스템(178320)</span>
+  <span class="summary-price">75,100원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">엘앤씨바이오(290650)</span>
+  <span class="summary-price">76,900원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/11</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">원익QnC(074600)</span>
+  <span class="summary-price">42,150원</span>
+  <span class="summary-skills">sector_rotation · flow_momentum</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">제주반도체(080220)</span>
+  <span class="summary-price">102,500원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/08</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">코웨이(021240)</span>
+  <span class="summary-price">89,000원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/05</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">한국타이어앤테크놀로지(161390)</span>
+  <span class="summary-price">72,000원</span>
+  <span class="summary-skills">sector_rotation · value_chain</span>
+  <span class="summary-date">06/10</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">HD현대마린솔루션(443060)</span>
+  <span class="summary-price">247,500원</span>
+  <span class="summary-skills">flow_momentum · pre_surge</span>
+  <span class="summary-date">06/12</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">HD현대일렉트릭(267260)</span>
+  <span class="summary-price">1,130,000원</span>
+  <span class="summary-skills">flow_momentum · contrarian_reversal</span>
+  <span class="summary-date">06/09</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">비에이치아이(083650)</span>
+  <span class="summary-price">80,600원</span>
+  <span class="summary-skills">flow_momentum · contrarian_reversal</span>
+  <span class="summary-date">06/10</span>
+</div><div class="summary-item">
+  <span class="summary-badge" style="background:#2a9a55;color:#c8fad8">2개 스킬</span>
+  <span class="summary-name">에스엠(041510)</span>
+  <span class="summary-price">83,600원</span>
+  <span class="summary-skills">flow_momentum · contrarian_reversal</span>
+  <span class="summary-date">06/10</span>
+</div>
+  
 </div>
 <div class="candidate-box">
   <h2>🎯 W25 진입 후보 (06/15~ 대응)</h2>
