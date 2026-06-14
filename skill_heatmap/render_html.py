@@ -1,10 +1,11 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-코스피/코스닥/US 섹션 + 종목 팝업 + 인사이트 + 진입후보
+코스피/코스닥/US 섹션 + 종목 팝업 + 인사이트 + 진입후보 + 중복종목 서머리
 """
 
 from pathlib import Path
 from datetime import date, timedelta
+from collections import defaultdict
 
 
 COLOR_SCALE = [
@@ -141,6 +142,75 @@ def _next_week_label():
     return f"W{week_num:02d}", next_mon.strftime("%m/%d")
 
 
+def _build_summary(scan_results):
+    """복수 스킬에서 감지된 종목 서머리"""
+    # KR / US 각각 종목별 스킬 목록 집계
+    kr_map = defaultdict(lambda: {"skills": [], "price": "", "date": ""})
+    us_map = defaultdict(lambda: {"skills": [], "price": "", "date": ""})
+
+    for sk, data in scan_results.items():
+        if sk == "best_of_best":
+            continue
+        for item in data.get("kr", []):
+            name = item["name"]
+            kr_map[name]["skills"].append(sk)
+            kr_map[name]["price"] = f'{item["close"]:,}원'
+            kr_map[name]["date"]  = item["signal_date"]
+        for item in data.get("us", []):
+            name = item["name"]
+            us_map[name]["skills"].append(sk)
+            us_map[name]["price"] = f'${item["close"]}'
+            us_map[name]["date"]  = item["signal_date"]
+
+    # 2개 이상 스킬에서 감지된 종목만
+    kr_multi = {k: v for k, v in kr_map.items() if len(v["skills"]) >= 2}
+    us_multi = {k: v for k, v in us_map.items() if len(v["skills"]) >= 2}
+
+    if not kr_multi and not us_multi:
+        return ""
+
+    def _badge(count):
+        if count >= 4:
+            return "background:#0d5c2e;color:#a8f0c6"
+        elif count >= 3:
+            return "background:#1a7a40;color:#b8f5cd"
+        else:
+            return "background:#2a9a55;color:#c8fad8"
+
+    kr_rows = ""
+    for name, v in sorted(kr_multi.items(), key=lambda x: -len(x[1]["skills"])):
+        count  = len(v["skills"])
+        skills = " · ".join(v["skills"])
+        style  = _badge(count)
+        kr_rows += f"""<div class="summary-item">
+  <span class="summary-badge" style="{style}">{count}개 스킬</span>
+  <span class="summary-name">{name}</span>
+  <span class="summary-price">{v["price"]}</span>
+  <span class="summary-skills">{skills}</span>
+  <span class="summary-date">{v["date"]}</span>
+</div>"""
+
+    us_rows = ""
+    for name, v in sorted(us_multi.items(), key=lambda x: -len(x[1]["skills"])):
+        count  = len(v["skills"])
+        skills = " · ".join(v["skills"])
+        style  = _badge(count)
+        us_rows += f"""<div class="summary-item">
+  <span class="summary-badge" style="{style}">{count}개 스킬</span>
+  <span class="summary-name">{name}</span>
+  <span class="summary-price">{v["price"]}</span>
+  <span class="summary-skills">{skills}</span>
+  <span class="summary-date">{v["date"]}</span>
+</div>"""
+
+    return f"""<div class="summary-box">
+  <h2>⭐ 복수 스킬 동시 감지 종목</h2>
+  <p class="cand-sub">2개 이상 스킬에서 동시에 신호가 발생한 종목 — 신뢰도 높은 진입 후보</p>
+  {"<div class='summary-market'>🇰🇷 KR</div>" + kr_rows if kr_rows else ""}
+  {"<div class='summary-market'>🇺🇸 US</div>" + us_rows if us_rows else ""}
+</div>"""
+
+
 def _build_candidates(scan_results):
     if not scan_results:
         return ""
@@ -225,6 +295,7 @@ def render(
     us_table     = _build_table(heatmap_us,     {},           set(),       "📋 S&P500 최악일낙폭")
 
     insight_html   = _build_insights(insights or [])
+    summary_html   = _build_summary(scan_results or {})
     candidate_html = _build_candidates(scan_results or {})
 
     html = f"""<!DOCTYPE html>
@@ -260,6 +331,18 @@ def render(
   .skill-name:hover::after {{ content: attr(data-tip); position: absolute; left: 0; top: 18px; background: #1e2530; color: #ddd; font-size: 10px; line-height: 1.5; padding: 6px 10px; border-radius: 4px; border: 1px solid #444; white-space: normal; width: 240px; z-index: 99; }}
   .insight-box {{ margin-top: 8px; margin-bottom: 24px; }}
   .insight-box li {{ font-size: 11px; line-height: 1.6; color: #ddd; }}
+
+  /* 복수 스킬 서머리 */
+  .summary-box {{ margin-top: 32px; margin-bottom: 24px; }}
+  .summary-market {{ font-size: 11px; color: #888; margin: 10px 0 6px; }}
+  .summary-item {{ display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 3px 0; border-radius: 4px; background: #1a1f2e; flex-wrap: wrap; }}
+  .summary-badge {{ border-radius: 3px; padding: 2px 6px; font-size: 10px; font-weight: 500; white-space: nowrap; }}
+  .summary-name {{ font-size: 11px; font-weight: 500; color: #e0e0e0; min-width: 140px; }}
+  .summary-price {{ font-size: 10px; color: #4caf7d; min-width: 70px; }}
+  .summary-skills {{ font-size: 10px; color: #888; flex: 1; }}
+  .summary-date {{ font-size: 10px; color: #666; white-space: nowrap; }}
+
+  /* 진입 후보 */
   .candidate-box {{ margin-top: 32px; margin-bottom: 24px; }}
   .cand-sub {{ font-size: 10px; color: #888; margin-bottom: 10px; }}
   .cand-table td {{ vertical-align: top; padding: 6px 4px; border-bottom: 1px solid #1e2530; }}
@@ -271,6 +354,8 @@ def render(
   .cand-price {{ color: #4caf7d; margin-left: 4px; font-size: 10px; }}
   .cand-date {{ color: #888; margin-left: 4px; font-size: 10px; }}
   .generated {{ font-size: 10px; color: #555; margin-top: 12px; }}
+
+  /* 팝업 */
   .modal-bg {{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }}
   .modal-bg.active {{ display:flex; align-items:center; justify-content:center; }}
   .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }}
@@ -304,6 +389,7 @@ def render(
 {us_table}
 
 {insight_html}
+{summary_html}
 {candidate_html}
 
 <p class="generated">생성일: {generated} · FinanceDataReader 기반 자동 계산</p>
