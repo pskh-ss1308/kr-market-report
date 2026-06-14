@@ -27,7 +27,7 @@ def vcp(df):
         row_40 = df.iloc[i - 40]
         if pd.isna(row["ma20"]) or pd.isna(row["atr_ratio"]):
             continue
-        cond1 = row["pct_from_52w_high"] >= -35
+        cond1 = row["pct_from_52w_high"] >= -25
         cond2 = row["atr_ratio"] < row_40["atr_ratio"] * 0.8
         cond3 = row["vol_ratio20"] < 1.2
         cond4 = row["close"] > row["ma20"]
@@ -119,7 +119,7 @@ def narrative_momentum(df):
         row = df.iloc[i]
         if pd.isna(row["mom20"]):
             continue
-        cond1 = row["pct_from_52w_high"] >= -10
+        cond1 = row["pct_from_52w_high"] >= -20
         cond2 = row["mom20"] > 5
         cond3 = row["vol_ratio20"] > 1.2
         cond4 = row["ma5"] > row["ma20"]
