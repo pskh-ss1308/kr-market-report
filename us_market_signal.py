@@ -45,7 +45,7 @@ KR_SOBUJANG = {
 
 # 한국 장 예측 지표
 KR_PREDICTORS = {
-    "^NQ=F":  "나스닥 선물",
+    "NQ=F":  "나스닥 선물",
     "KORU":   "KORU ETF (한국 대형주 3배)",
     "^SOX":   "SOX 반도체지수",
     "KRW=X":  "달러/원 환율",
@@ -273,9 +273,28 @@ def build_message(
     else:
         kr_lines.append("  • KIS API 미설정 — 외국인/기관 데이터 없음")
 
-    us_str   = "\n".join(us_lines)
-    pred_str = "\n".join(pred_lines)
-    kr_str   = "\n".join(kr_lines)
+    # 소부장 섹션
+    sb_lines = []
+    if kr_sobujang:
+        for code, (name, flow) in kr_sobujang.items():
+            if flow.get("error"):
+                sb_lines.append(f"  • {name}: 조회 실패")
+                continue
+            f_str = f"외국인 {flow['foreign']:+.0f}억"
+            i_str = f"기관 {flow['institution']:+.0f}억"
+            mark  = " ✅" if flow["both_buying"] else ""
+            ret   = get_kr_price_returns(code)
+            ret_str = ""
+            if not ret.get("error"):
+                ret_str = "\n      📈 1주 {:+.1f}% | 1개월 {:+.1f}%".format(ret['ret_1w'], ret['ret_1m'])
+            sb_lines.append(f"  • {name}: {f_str} | {i_str}{mark}{ret_str}")
+    else:
+        sb_lines.append("  • KIS API 미설정")
+
+    us_str       = "\n".join(us_lines)
+    pred_str     = "\n".join(pred_lines)
+    kr_str       = "\n".join(kr_lines)
+    sobujang_str = "\n".join(sb_lines)
 
     return f"""🌏 <b>시장 신호</b> | {now}
 
@@ -327,22 +346,3 @@ def main():
     sox_data  = get_price_info("^SOX")
     us_stocks = [get_price_info(t) for t in US_CANDIDATES]
 
-    # 한국 예측 지표
-    kr_pred = {t: get_price_info(t) for t in KR_PREDICTORS}
-
-    # KIS 토큰 + 한국 대형주 수급
-    kis_token = get_kis_token()
-
-    # 소부장 수급
-    sobujang_flows = {}
-    if kis_token:
-        for code, name in KR_SOBUJANG.items():
-            sobujang_flows[code] = (name, get_kr_investor_flow(code, kis_token))
-
-    msg = build_message(sox_data, us_stocks, kr_pred, KR_CANDIDATES, kis_token, sobujang_flows)
-    print(msg)
-    send_telegram(msg)
-
-
-if __name__ == "__main__":
-    main()
