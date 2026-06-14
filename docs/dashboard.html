@@ -1,1 +1,168 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시장 신호 대시보드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,"Segoe UI",sans-serif;font-size:13px;line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:20px 16px}
+.header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+.header h1{font-size:18px;font-weight:600}
+.updated{font-size:11px;color:#6e7681;background:#161b22;border:0.5px solid #30363d;border-radius:4px;padding:3px 8px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:20px}
+.metric{background:#161b22;border:0.5px solid #30363d;border-radius:8px;padding:12px 14px}
+.metric-label{font-size:11px;color:#6e7681;margin-bottom:4px}
+.metric-val{font-size:20px;font-weight:600}
+.metric-sub{font-size:11px;color:#8b949e;margin-top:2px}
+.section{margin-bottom:24px}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #30363d}
+.section-title{font-size:13px;font-weight:600;color:#8b949e}
+.badge{font-size:10px;background:#21262d;border:0.5px solid #30363d;border-radius:4px;padding:1px 6px;color:#6e7681}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#6e7681}
+.swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.heatmap-wrap{overflow-x:auto}
+table.hm{border-collapse:separate;border-spacing:3px;min-width:100%}
+table.hm th{font-size:11px;color:#6e7681;font-weight:400;text-align:center;padding:2px 4px;white-space:nowrap}
+table.hm th.rh{text-align:left;width:120px}
+table.hm td.label{font-size:12px;color:#8b949e;padding:4px 6px;white-space:nowrap}
+table.hm td.cell{border-radius:4px;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;min-width:52px}
+table.hm td.grp{font-size:10px;color:#6e7681;padding:6px 6px 2px;letter-spacing:.05em}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.flow-card{background:#161b22;border:0.5px solid #30363d;border-radius:8px;padding:10px 12px}
+.flow-name{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.both-badge{font-size:10px;background:rgba(46,160,67,.15);color:#56d364;border:0.5px solid #2ea043;border-radius:3px;padding:1px 5px}
+.flow-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.flow-lbl{font-size:10px;color:#6e7681;width:38px;flex-shrink:0}
+.bar-bg{flex:1;height:10px;background:#21262d;border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.flow-num{font-size:11px;font-weight:600;width:64px;text-align:right}
+.loading{text-align:center;padding:60px;color:#6e7681;font-size:14px}
+.up{color:#56d364}.down{color:#f85149}.neu{color:#8b949e}.warn{color:#e3b341}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>시장 신호 대시보드</h1>
+    <span class="updated" id="updated-at">로딩 중...</span>
+  </div>
+  <div id="app"><div class="loading">데이터 불러오는 중...</div></div>
+</div>
+
+<script>
+function cellColor(v){
+  if(v==null)return"#21262d";
+  if(v>=3)return"#1a7f37";if(v>=1)return"#2ea043";if(v>=0)return"#2d3e2d";
+  if(v>=-1)return"#3e2d2d";if(v>=-3)return"#7f1d1d";return"#b91c1c";
+}
+function tc(v){if(v==null)return"#6e7681";return Math.abs(v)>=1?"#e6edf3":"#8b949e"}
+function sign(v){return v>0?"+":""}
+function fmt(v,d=1){return v!=null?(sign(v)+v.toFixed(d)+"%"):"-"}
+
+function buildMetrics(d){
+  const sox=d.sox; const krw=d.predictors["KRW=X"]; const nq=d.predictors["NQ=F"]; const koru=d.predictors["KORU"];
+  const soxCls=sox.change_pct>=0?"up":"down";
+  const nqCls=nq?nq.change_pct>=0?"up":"down":"neu";
+  const koruCls=koru?koru.change_pct>=0?"up":"down":"neu";
+  const krwVal=krw?krw.close:0;
+  const krwCls=krwVal<1340?"up":krwVal<1390?"neu":"warn";
+  const outlookCls=d.outlook.includes("우호")?"up":d.outlook.includes("관망")?"down":"warn";
+  return`<div class="metrics">
+    <div class="metric"><div class="metric-label">SOX 반도체</div><div class="metric-val ${soxCls}">${fmt(sox.change_pct)}</div><div class="metric-sub">${sox.close.toLocaleString()}pt · ${sox.signal}</div></div>
+    <div class="metric"><div class="metric-label">나스닥 선물</div><div class="metric-val ${nqCls}">${nq?fmt(nq.change_pct):"-"}</div><div class="metric-sub">${nq?"1주 "+fmt(nq.ret_1w)+" · 1개월 "+fmt(nq.ret_1m):""}</div></div>
+    <div class="metric"><div class="metric-label">KORU ETF</div><div class="metric-val ${koruCls}">${koru?fmt(koru.change_pct):"-"}</div><div class="metric-sub">${koru?"1주 "+fmt(koru.ret_1w)+" · 1개월 "+fmt(koru.ret_1m):""}</div></div>
+    <div class="metric"><div class="metric-label">달러/원</div><div class="metric-val ${krwCls}">${krwVal?Math.round(krwVal).toLocaleString()+"원":"-"}</div><div class="metric-sub">${krwVal>=1390?"원화약세 주의":krwVal<1340?"원화강세":"보통"}</div></div>
+    <div class="metric"><div class="metric-label">한국 장 전망</div><div class="metric-val ${outlookCls}">${d.outlook.replace(" — 종목별 판단","")}</div><div class="metric-sub">${d.week} 기준</div></div>
+  </div>`;
+}
+
+function buildHeatmap(rows, weeks, showGroup){
+  let h=`<table class="hm"><thead><tr><th class="rh">종목</th>`;
+  weeks.forEach(w=>h+=`<th>${w}</th>`);
+  h+=`</tr></thead><tbody>`;
+  let lastGrp=null;
+  rows.forEach(r=>{
+    if(showGroup&&r.group!==lastGrp){
+      if(lastGrp!==null) h+=`<tr><td colspan="${weeks.length+1}" style="height:6px"></td></tr>`;
+      h+=`<tr><td class="grp" colspan="${weeks.length+1}">${r.group}</td></tr>`;
+      lastGrp=r.group;
+    }
+    h+=`<tr><td class="label">${r.name}</td>`;
+    weeks.forEach(w=>{
+      const v=r.weekly?r.weekly[w]:null;
+      h+=`<td class="cell" style="background:${cellColor(v)};color:${tc(v)}">${v!=null?fmt(v):"-"}</td>`;
+    });
+    h+=`</tr>`;
+  });
+  return h+`</tbody></table>`;
+}
+
+function buildUsHeatmap(stocks, week){
+  const rows=stocks.map(s=>({name:s.ticker,weekly:{[week]:s.ret_1w}}));
+  let h=`<table class="hm"><thead><tr><th class="rh">종목</th><th>당일</th><th>1주</th><th>1개월</th></tr></thead><tbody>`;
+  stocks.forEach(s=>{
+    const dc=s.change_pct>=0?"#2ea043":"#da3633"; const dtc=Math.abs(s.change_pct)>=1?"#e6edf3":"#8b949e";
+    const wc=cellColor(s.ret_1w); const wtc=tc(s.ret_1w);
+    const mc=cellColor(s.ret_1m); const mtc=tc(s.ret_1m);
+    h+=`<tr>
+      <td class="label">${s.ticker}<br><span style="font-size:10px;color:#6e7681">$${s.close.toLocaleString()}</span></td>
+      <td class="cell" style="background:${dc};color:${dtc}">${fmt(s.change_pct)}</td>
+      <td class="cell" style="background:${wc};color:${wtc}">${fmt(s.ret_1w)}</td>
+      <td class="cell" style="background:${mc};color:${mtc}">${fmt(s.ret_1m)}</td>
+    </tr>`;
+  });
+  return h+`</tbody></table>`;
+}
+
+function buildFlow(stocks){
+  const maxAbs=Math.max(...stocks.flatMap(s=>[Math.abs(s.frgn||0),Math.abs(s.inst||0)]),1);
+  return`<div class="flow-grid">`+stocks.map(s=>{
+    const fPct=Math.round(Math.abs(s.frgn)/maxAbs*100);
+    const iPct=Math.round(Math.abs(s.inst)/maxAbs*100);
+    const fCol=s.frgn>=0?"#2ea043":"#da3633";
+    const iCol=s.inst>=0?"#2ea043":"#da3633";
+    return`<div class="flow-card">
+      <div class="flow-name">${s.name}${s.both?'<span class="both-badge">동시매수</span>':""}
+      </div>
+      <div class="flow-row"><span class="flow-lbl">외국인</span><div class="bar-bg"><div class="bar-fill" style="width:${fPct}%;background:${fCol}"></div></div><span class="flow-num" style="color:${fCol}">${sign(s.frgn)}${Math.round(s.frgn).toLocaleString()}억</span></div>
+      <div class="flow-row"><span class="flow-lbl">기관</span><div class="bar-bg"><div class="bar-fill" style="width:${iPct}%;background:${iCol}"></div></div><span class="flow-num" style="color:${iCol}">${sign(s.inst)}${Math.round(s.inst).toLocaleString()}억</span></div>
+      <div style="margin-top:6px;font-size:10px;color:#6e7681">1주 ${fmt(s.ret_1w)} | 1개월 ${fmt(s.ret_1m)}</div>
+    </div>`;
+  }).join("")+`</div>`;
+}
+
+function render(d){
+  const large = d.kr_stocks.filter(s=>s.group==="대형주");
+  const sobu  = d.kr_stocks.filter(s=>s.group==="소부장");
+  document.getElementById("updated-at").textContent="업데이트: "+d.updated;
+  document.getElementById("app").innerHTML=`
+    ${buildMetrics(d)}
+    <div class="section">
+      <div class="section-header"><span class="section-title">🇺🇸 미국 종목</span><span class="badge">당일 · 1주 · 1개월</span></div>
+      <div class="heatmap-wrap">${buildUsHeatmap(d.us_stocks, d.week)}</div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">📊 외국인/기관 수급 — 대형주</span><span class="badge">전일 마감 · 억원</span></div>
+      ${buildFlow(large)}
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">🔧 외국인/기관 수급 — 반도체 소부장</span><span class="badge">전일 마감 · 억원</span></div>
+      ${buildFlow(sobu)}
+    </div>
+  `;
+}
+
+fetch("data.json?t="+Date.now())
+  .then(r=>r.json())
+  .then(render)
+  .catch(()=>{
+    document.getElementById("app").innerHTML=`<div class="loading">데이터를 불러올 수 없습니다.<br><small style="color:#6e7681">GitHub Actions가 실행된 후 다시 새로고침해주세요.</small></div>`;
+  });
+</script>
+</body>
+</html>
+
