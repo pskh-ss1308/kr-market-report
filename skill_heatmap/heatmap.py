@@ -16,11 +16,14 @@ def calc_d5_return(df, signal_date):
         return None
     idx       = dates.index(signal_date)
     entry_idx = idx + 1
-    exit_idx  = idx + 6
-    if exit_idx >= len(df):
+    # 5일 후가 없으면 현재까지의 수익률로 계산
+    exit_idx  = min(idx + 6, len(df) - 1)
+    if exit_idx <= entry_idx:
         return None
     entry = df.iloc[entry_idx]["close"]
     exit_ = df.iloc[exit_idx]["close"]
+    if entry == 0:
+        return None
     return (exit_ - entry) / entry * 100
 
 
@@ -41,8 +44,7 @@ def run_skill_heatmap(ohlcv_dict, year=None, name_map=None):
             continue
         df = add_all(raw_df)
 
-        # 종목명 결정
-        name = name_map.get(str(ticker), ticker)
+        name    = name_map.get(str(ticker), ticker)
         display = f"{name}({ticker})" if name != ticker else ticker
 
         for skill_name, skill_fn in SKILL_REGISTRY.items():
@@ -60,9 +62,9 @@ def run_skill_heatmap(ohlcv_dict, year=None, name_map=None):
                     continue
                 week = get_week_label(sig_date)
                 results[skill_name].setdefault(week, []).append({
-                    "ticker":  display,
-                    "ret":     round(ret, 2),
-                    "date":    sig_date.strftime("%m/%d"),
+                    "ticker": display,
+                    "ret":    round(ret, 2),
+                    "date":   sig_date.strftime("%m/%d"),
                 })
 
     rows = []
