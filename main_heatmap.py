@@ -1,6 +1,6 @@
 """
 메인 실행 스크립트
-usage: python main_heatmap.py [--year 2025]
+usage: python main_heatmap.py [--output docs/heatmap.html]
 """
 
 import argparse
@@ -22,22 +22,31 @@ BENCHMARK_KOSPI = {
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--year",   type=int, default=datetime.date.today().year)
     parser.add_argument("--output", type=str, default="docs/heatmap.html")
     args = parser.parse_args()
 
-    print(f"[START] {args.year}년 스킬 히트맵 생성")
+    today     = datetime.date.today()
+    this_year = today.year
+    last_year = today.year - 1
+
+    print(f"[START] {last_year}~{this_year}년 스킬 히트맵 생성")
 
     kis   = KisAPI()
-    start = f"{args.year - 1}0101"
-    end   = f"{args.year}1231"
+    start = f"{last_year - 1}0101"   # 지표 계산용 여유 데이터
+    end   = today.strftime("%Y%m%d") # 오늘까지
 
     # ── KR ───────────────────────────────────────────────
     print("[1/2] KR 데이터 수집 중...")
     tickers_kr = kis.get_ticker_list("KOSPI")
     ohlcv_kr   = kis.batch_ohlcv(tickers_kr, start, end, market="KR")
     print(f"  KR 조회 완료: {len(ohlcv_kr)}개 종목")
-    result_kr  = run_skill_heatmap(ohlcv_kr, year=args.year)
+
+    # 2025 + 2026 각각 집계 후 합치기
+    result_kr_25 = run_skill_heatmap(ohlcv_kr, year=last_year)
+    result_kr_26 = run_skill_heatmap(ohlcv_kr, year=this_year)
+
+    import pandas as pd
+    result_kr  = pd.concat([result_kr_25, result_kr_26], ignore_index=True)
     heatmap_kr = pivot_for_heatmap(result_kr)
     print(f"  KR 신호 집계 완료: {len(result_kr)}행")
 
@@ -46,8 +55,11 @@ def main():
     tickers_us = kis.get_ticker_list("US")
     ohlcv_us   = kis.batch_ohlcv(tickers_us, start, end, market="US")
     print(f"  US 조회 완료: {len(ohlcv_us)}개 종목")
-    result_us  = run_skill_heatmap(ohlcv_us, year=args.year)
-    heatmap_us = pivot_for_heatmap(result_us)
+
+    result_us_25 = run_skill_heatmap(ohlcv_us, year=last_year)
+    result_us_26 = run_skill_heatmap(ohlcv_us, year=this_year)
+    result_us    = pd.concat([result_us_25, result_us_26], ignore_index=True)
+    heatmap_us   = pivot_for_heatmap(result_us)
     print(f"  US 신호 집계 완료: {len(result_us)}행")
 
     # ── 인사이트 생성 ─────────────────────────────────────
