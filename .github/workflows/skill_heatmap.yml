@@ -2,7 +2,7 @@ name: 트레이딩 스킬 주간 히트맵
 
 on:
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 permissions:
