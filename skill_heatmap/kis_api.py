@@ -1,8 +1,3 @@
-"""
-KIS API 래퍼 — 일봉 OHLCV + 종목 리스트 조회
-환경변수: KIS_APP_KEY, KIS_APP_SECRET
-"""
-
 import os
 import time
 import requests
@@ -23,11 +18,7 @@ class KisAPI:
             return self._token
         resp = requests.post(
             f"{BASE_URL}/oauth2/tokenP",
-            json={
-                "grant_type": "client_credentials",
-                "appkey":     self.app_key,
-                "appsecret":  self.app_secret,
-            },
+            json={"grant_type": "client_credentials", "appkey": self.app_key, "appsecret": self.app_secret},
             timeout=10,
         )
         resp.raise_for_status()
@@ -58,22 +49,43 @@ class KisAPI:
         }
         resp = requests.get(url, headers=self._headers("FHKST03010100"), params=params, timeout=15)
         resp.raise_for_status()
-        raw  = resp.json().get("output2", [])
+        raw = resp.json().get("output2", [])
         if not raw:
             return pd.DataFrame()
-        df = pd.DataFrame(raw)
-        df = df.rename(columns={
-            "stck_bsop_date": "date",
-            "stck_oprc":      "open",
-            "stck_hgpr":      "high",
-            "stck_lwpr":      "low",
-            "stck_clpr":      "close",
-            "acml_vol":       "volume",
+        df = pd.DataFrame(raw).rename(columns={
+            "stck_bsop_date": "date", "stck_oprc": "open",
+            "stck_hgpr": "high",     "stck_lwpr": "low",
+            "stck_clpr": "close",    "acml_vol":  "volume",
         })[["date","open","high","low","close","volume"]]
         df[["open","high","low","close","volume"]] = df[["open","high","low","close","volume"]].apply(pd.to_numeric, errors="coerce")
         df["date"] = pd.to_datetime(df["date"])
-        df = df.sort_values("date").reset_index(drop=True)
-        return df
+        return df.sort_values("date").reset_index(drop=True)
+
+    def get_daily_ohlcv_us(self, ticker, start, end):
+        url    = f"{BASE_URL}/uapi/overseas-stock/v1/quotations/dailychartprice"
+        params = {
+            "AUTH": "", "EXCD": "NAS", "SYMB": ticker,
+            "GUBN": "0", "BYMD": end, "MODP": "0",
+        }
+        try:
+            resp = requests.get(url, headers=self._headers("HHDFS76240000"), params=params, timeout=15)
+            resp.raise_for_status()
+            raw = resp.json().get("output2", [])
+            if not raw:
+                return pd.DataFrame()
+            df = pd.DataFrame(raw).rename(columns={
+                "xymd": "date", "open": "open", "high": "high",
+                "low":  "low",  "clos": "close", "tvol": "volume",
+            })
+            if "date" not in df.columns:
+                return pd.DataFrame()
+            df = df[["date","open","high","low","close","volume"]]
+            df[["open","high","low","close","volume"]] = df[["open","high","low","close","volume"]].apply(pd.to_numeric, errors="coerce")
+            df["date"] = pd.to_datetime(df["date"])
+            return df.sort_values("date").reset_index(drop=True)
+        except Exception as e:
+            print(f"[WARN] US {ticker}: {e}")
+            return pd.DataFrame()
 
     def get_ticker_list(self, market="KOSPI"):
         SAMPLE_KOSPI = [
@@ -86,19 +98,26 @@ class KisAPI:
             "042660","009540","000810","161390","004020",
             "006400","207940","352820","259960","035720",
         ]
-        SAMPLE_KOSDAQ = [
-            "247540","091990","196170","086520","035900",
-            "112040","263750","357780","039030","145020",
-            "066970","950130","031980","241560","036930",
-            "293490","263920","240810","122870","041510",
+        SAMPLE_US = [
+            "AAPL","MSFT","NVDA","AMZN","META",
+            "GOOGL","TSLA","AVGO","AMD","ORCL",
+            "NFLX","CRM","ADBE","QCOM","INTC",
+            "MU","AMAT","LRCX","KLAC","MRVL",
+            "ARM","SMCI","PLTR","SNOW","COIN",
+            "MSTR","RBLX","UBER","LYFT","SHOP",
         ]
-        return SAMPLE_KOSPI if market == "KOSPI" else SAMPLE_KOSDAQ
+        if market == "US":
+            return SAMPLE_US
+        return SAMPLE_KOSPI
 
-    def batch_ohlcv(self, tickers, start, end, delay=0.2):
+    def batch_ohlcv(self, tickers, start, end, delay=0.2, market="KR"):
         result = {}
         for i, ticker in enumerate(tickers):
             try:
-                df = self.get_daily_ohlcv(ticker, start, end)
+                if market == "US":
+                    df = self.get_daily_ohlcv_us(ticker, start, end)
+                else:
+                    df = self.get_daily_ohlcv(ticker, start, end)
                 if not df.empty:
                     result[ticker] = df
             except Exception as e:
