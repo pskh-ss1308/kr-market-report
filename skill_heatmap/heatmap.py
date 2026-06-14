@@ -1,84 +1,69 @@
 """
-신호 발생 후 5일 수익률 계산 및 주별 집계
+메인 실행 스크립트
+usage: python main_heatmap.py [--year 2025]
 """
 
-import pandas as pd
-import numpy as np
+import argparse
 import datetime
-from .skills import SKILL_REGISTRY
-from .indicators import add_all
+from skill_heatmap.kis_api     import KisAPI
+from skill_heatmap.heatmap     import run_skill_heatmap, pivot_for_heatmap
+from skill_heatmap.render_html import render
+from skill_heatmap.insight     import generate_insights
+
+BENCHMARK_KOSPI = {
+    "W06": -0.3, "W07": +2.3, "W08": -1.0,
+    "W09":-12.1, "W10": -6.0, "W11": -2.7,
+    "W12": -6.5, "W13": -4.5, "W14": -1.6,
+    "W15": -0.9, "W16": -0.0, "W17": -1.4,
+    "W18": +0.1, "W19": -6.1, "W20": -3.3,
+    "W21": -0.5, "W22": -5.5, "W23": -8.3,
+}
 
 
-def calc_d5_return(df: pd.DataFrame, signal_date: pd.Timestamp) -> float | None:
-    dates = df["date"].tolist()
-    if signal_date not in dates:
-        return None
-    idx       = dates.index(signal_date)
-    entry_idx = idx + 1
-    exit_idx  = idx + 6
-    if exit_idx >= len(df):
-        return None
-    entry = df.iloc[entry_idx]["close"]
-    exit_ = df.iloc[exit_idx]["close"]
-    return (exit_ - entry) / entry * 100
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--year",   type=int, default=datetime.date.today().year)
+    parser.add_argument("--output", type=str, default="docs/heatmap.html")
+    args = parser.parse_args()
+
+    print(f"[START] {args.year}년 스킬 히트맵 생성")
+
+    kis   = KisAPI()
+    start = f"{args.year - 1}0101"
+    end   = f"{args.year}1231"
+
+    # ── KR ───────────────────────────────────────────────
+    print("[1/2] KR 데이터 수집 중...")
+    tickers_kr = kis.get_ticker_list("KOSPI")
+    ohlcv_kr   = kis.batch_ohlcv(tickers_kr, start, end, market="KR")
+    print(f"  KR 조회 완료: {len(ohlcv_kr)}개 종목")
+    result_kr  = run_skill_heatmap(ohlcv_kr, year=args.year)
+    heatmap_kr = pivot_for_heatmap(result_kr)
+    print(f"  KR 신호 집계 완료: {len(result_kr)}행")
+
+    # ── US ───────────────────────────────────────────────
+    print("[2/2] US 데이터 수집 중...")
+    tickers_us = kis.get_ticker_list("US")
+    ohlcv_us   = kis.batch_ohlcv(tickers_us, start, end, market="US")
+    print(f"  US 조회 완료: {len(ohlcv_us)}개 종목")
+    result_us  = run_skill_heatmap(ohlcv_us, year=args.year)
+    heatmap_us = pivot_for_heatmap(result_us)
+    print(f"  US 신호 집계 완료: {len(result_us)}행")
+
+    # ── 인사이트 생성 ─────────────────────────────────────
+    insights = generate_insights(heatmap_kr, heatmap_us)
+    print(f"  인사이트 {len(insights)}개 생성")
+
+    # ── HTML 렌더링 ───────────────────────────────────────
+    render(
+        heatmap_kr   = heatmap_kr,
+        output_path  = args.output,
+        benchmark_kr = BENCHMARK_KOSPI,
+        heatmap_us   = heatmap_us if ohlcv_us else None,
+        insights     = insights,
+    )
+    print(f"[DONE] {args.output}")
 
 
-def get_week_label(date: pd.Timestamp) -> str:
-    return f"W{date.isocalendar().week:02d}"
-
-
-def run_skill_heatmap(
-    ohlcv_dict: dict[str, pd.DataFrame],
-    year: int = None,
-) -> pd.DataFrame:
-    if year is None:
-        year = datetime.date.today().year
-
-    results = {sk: {} for sk in SKILL_REGISTRY}
-
-    for ticker, raw_df in ohlcv_dict.items():
-        if raw_df.empty or len(raw_df) < 60:
-            continue
-        df = add_all(raw_df)
-
-        for skill_name, skill_fn in SKILL_REGISTRY.items():
-            try:
-                signals = skill_fn(df)
-            except Exception as e:
-                print(f"[WARN] {skill_name}/{ticker}: {e}")
-                continue
-
-            for sig_date in signals:
-                if sig_date.year != year:
-                    continue
-                ret = calc_d5_return(df, sig_date)
-                if ret is None:
-                    continue
-                week = get_week_label(sig_date)
-                results[skill_name].setdefault(week, []).append(ret)
-
-    rows = []
-    for skill, week_data in results.items():
-        for week, rets in week_data.items():
-            n        = len(rets)
-            mean_ret = float(np.mean(rets))
-            win_rate = float(np.mean([r > 0 for r in rets]) * 100)
-            rows.append({"skill": skill, "week": week, "mean": mean_ret, "n": n, "win_rate": win_rate})
-
-    if not rows:
-        return pd.DataFrame(columns=["skill","week","mean","n","win_rate"])
-
-    return pd.DataFrame(rows)
-
-
-def pivot_for_heatmap(df: pd.DataFrame) -> dict:
-    out = {}
-    for _, row in df.iterrows():
-        sk = row["skill"]
-        wk = row["week"]
-        out.setdefault(sk, {})[wk] = {
-            "mean":     round(row["mean"], 1),
-            "n":        int(row["n"]),
-            "win_rate": round(row["win_rate"]),
-        }
-    return out
+if __name__ == "__main__":
+    main()
