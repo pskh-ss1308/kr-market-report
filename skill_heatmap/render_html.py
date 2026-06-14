@@ -1,6 +1,6 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-코스피/코스닥/US 섹션 + 2025/2026 탭 + 종목 팝업 + 인사이트 + 진입후보
+코스피/코스닥/US 섹션 + 종목 팝업 + 인사이트 + 진입후보
 """
 
 from pathlib import Path
@@ -70,7 +70,7 @@ def _build_table(heatmap_data, benchmark, hold_weeks, bm_label):
     week_cols = sorted(w for w in WEEKS if w in used_weeks)
 
     if not week_cols:
-        return "<p style='color:#666;font-size:11px;padding:12px'>해당 연도 데이터 없음</p>"
+        return "<p style='color:#666;font-size:11px;padding:12px'>데이터 없음</p>"
 
     thead = '<th class="skill-col">스킬 \\ 주</th>'
     for w in week_cols:
@@ -116,19 +116,6 @@ def _build_table(heatmap_data, benchmark, hold_weeks, bm_label):
 </div>"""
 
 
-def _build_section(title, tab_id, data_25, data_26, benchmark, hold_weeks, bm_label):
-    t25 = _build_table(data_25, benchmark, hold_weeks, bm_label)
-    t26 = _build_table(data_26, {}, set(), bm_label)
-    return f"""
-<h1>{title}</h1>
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('{tab_id}','2025',this)">2025년</button>
-  <button class="tab-btn" onclick="switchTab('{tab_id}','2026',this)">2026년</button>
-</div>
-<div id="{tab_id}-2025" class="tab-content active">{t25}</div>
-<div id="{tab_id}-2026" class="tab-content">{t26}</div>"""
-
-
 def _build_insights(insights):
     if not insights:
         return ""
@@ -159,8 +146,8 @@ def _build_candidates(scan_results):
         return ""
 
     next_week, next_mon = _next_week_label()
-
     rows = ""
+
     for sk, data in scan_results.items():
         kr_items = data.get("kr", [])
         us_items = data.get("us", [])
@@ -222,34 +209,20 @@ def _build_candidates(scan_results):
 
 
 def render(
-    heatmap_kospi_25,
-    heatmap_kospi_26,
-    heatmap_kosdaq_25,
-    heatmap_kosdaq_26,
-    heatmap_us_25,
-    heatmap_us_26,
+    heatmap_kospi,
+    heatmap_kosdaq,
+    heatmap_us,
     output_path  = "docs/heatmap.html",
     benchmark_kr = None,
     insights     = None,
     scan_results = None,
 ):
     generated = date.today().strftime("%Y-%m-%d")
+    this_year = date.today().year
 
-    kospi_section  = _build_section(
-        "🇰🇷 KR 코스피 — 주간 수익률 매트릭스", "kospi",
-        heatmap_kospi_25, heatmap_kospi_26,
-        benchmark_kr, HOLD_WEEKS, "📋 코스피 최악일낙폭"
-    )
-    kosdaq_section = _build_section(
-        "🇰🇷 KR 코스닥 — 주간 수익률 매트릭스", "kosdaq",
-        heatmap_kosdaq_25, heatmap_kosdaq_26,
-        {}, set(), "📋 코스닥 최악일낙폭"
-    )
-    us_section     = _build_section(
-        "🇺🇸 US — 주간 수익률 매트릭스", "us",
-        heatmap_us_25, heatmap_us_26,
-        {}, set(), "📋 S&P500 최악일낙폭"
-    )
+    kospi_table  = _build_table(heatmap_kospi,  benchmark_kr, HOLD_WEEKS, "📋 코스피 최악일낙폭")
+    kosdaq_table = _build_table(heatmap_kosdaq, {},           set(),       "📋 코스닥 최악일낙폭")
+    us_table     = _build_table(heatmap_us,     {},           set(),       "📋 S&P500 최악일낙폭")
 
     insight_html   = _build_insights(insights or [])
     candidate_html = _build_candidates(scan_results or {})
@@ -259,7 +232,7 @@ def render(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>트레이딩 스킬 주간 수익률 히트맵</title>
+<title>트레이딩 스킬 주간 수익률 히트맵 {this_year}</title>
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ background: #0e1117; color: #e0e0e0; font-family: 'Pretendard', sans-serif; font-size: 12px; padding: 20px; }}
@@ -268,11 +241,6 @@ def render(
   h2 {{ font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #ccc; }}
   .sub {{ font-size: 10px; color: #888; margin-bottom: 16px; line-height: 1.7; }}
   .sub b {{ color: #e85555; }}
-  .tabs {{ display: flex; gap: 6px; margin-bottom: 12px; }}
-  .tab-btn {{ padding: 5px 16px; border-radius: 4px; border: 1px solid #333; background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer; }}
-  .tab-btn.active {{ background: #2a9a55; color: #fff; border-color: #2a9a55; }}
-  .tab-content {{ display: none; }}
-  .tab-content.active {{ display: block; }}
   .table-wrap {{ overflow-x: auto; margin-bottom: 24px; }}
   table {{ border-collapse: collapse; width: 100%; }}
   th, td {{ padding: 2px 3px; text-align: center; vertical-align: middle; }}
@@ -326,9 +294,15 @@ def render(
   · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 마우스 올리면 설명 · 셀 클릭 시 종목 리스트
 </div>
 
-{kospi_section}
-{kosdaq_section}
-{us_section}
+<h1>🇰🇷 KR 코스피 — 주간 수익률 매트릭스 ({this_year})</h1>
+{kospi_table}
+
+<h1>🇰🇷 KR 코스닥 — 주간 수익률 매트릭스 ({this_year})</h1>
+{kosdaq_table}
+
+<h1>🇺🇸 US — 주간 수익률 매트릭스 ({this_year})</h1>
+{us_table}
+
 {insight_html}
 {candidate_html}
 
@@ -342,14 +316,6 @@ def render(
 </div>
 
 <script>
-function switchTab(market, year, btn) {{
-  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(market+'-2025').classList.remove('active');
-  document.getElementById(market+'-2026').classList.remove('active');
-  document.getElementById(market+'-'+year).classList.add('active');
-}}
-
 function showTickers(skill, week, raw) {{
   const items = raw.split('|').filter(Boolean);
   document.getElementById('modalTitle').innerHTML =
