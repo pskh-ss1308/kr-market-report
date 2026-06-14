@@ -112,7 +112,9 @@ def get_kr_investor_flow(code: str, token: str) -> dict:
     params = {"fid_cond_mrkt_div_code": "J", "fid_input_iscd": code}
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
-        output = resp.json().get("output", [])
+        raw = resp.json()
+        print(f"[KIS DEBUG {code}] rt_cd={raw.get('rt_cd')} msg={raw.get('msg1')} output={str(raw.get('output',''))[:200]}")
+        output = raw.get("output", [])
         # output이 리스트면 첫번째, 딕셔너리면 그대로
         data = output[0] if isinstance(output, list) and output else output if isinstance(output, dict) else {}
 
