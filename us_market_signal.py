@@ -186,7 +186,7 @@ def krw_signal(close: float) -> tuple[str, str]:
 def korea_outlook(predictors: dict) -> tuple[str, str]:
     """한국 장 전망 종합 판단"""
     score = 0
-    nq  = predictors.get("^NQ=F", {})
+    nq  = predictors.get("NQ=F", {})
     koru = predictors.get("KORU", {})
     sox  = predictors.get("^SOX", {})
     krw  = predictors.get("KRW=X", {})
@@ -346,3 +346,22 @@ def main():
     sox_data  = get_price_info("^SOX")
     us_stocks = [get_price_info(t) for t in US_CANDIDATES]
 
+    # 한국 예측 지표
+    kr_pred = {t: get_price_info(t) for t in KR_PREDICTORS}
+
+    # KIS 토큰 + 한국 대형주 수급
+    kis_token = get_kis_token()
+
+    # 소부장 수급
+    sobujang_flows = {}
+    if kis_token:
+        for code, name in KR_SOBUJANG.items():
+            sobujang_flows[code] = (name, get_kr_investor_flow(code, kis_token))
+
+    msg = build_message(sox_data, us_stocks, kr_pred, KR_CANDIDATES, kis_token, sobujang_flows)
+    print(msg)
+    send_telegram(msg)
+
+
+if __name__ == "__main__":
+    main()
