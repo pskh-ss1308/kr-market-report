@@ -1,6 +1,6 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-KR + US 위아래 배치 / 스킬 툴팁 / 인사이트 섹션
+KR + US 위아래 배치 / 스킬 툴팁 / 인사이트 / 종목 클릭 팝업
 """
 
 from pathlib import Path
@@ -25,7 +25,7 @@ SKILL_TOOLTIPS = {
     "flow_momentum":       "플로우 모멘텀 — 거래량 폭발(평균 1.8배↑) + 당일 양봉 + MA20 위.",
     "pre_surge":           "급등 전 징후 — 볼린저밴드 수축 + 거래량 급감 후 반등 조짐 포착.",
     "contrarian_reversal": "역추세 반전 — RSI 35 이하 과매도 구간에서 당일 양봉 전환 신호.",
-    "narrative_momentum":  "내러티브 모멘텀 — 52주 신고가 근처(-10%) + 강한 단기 모멘텀 추종.",
+    "narrative_momentum":  "내러티브 모멘텀 — 52주 신고가 근처(-20%) + 강한 단기 모멘텀 추종.",
     "value_chain":         "밸류체인 — 중기 모멘텀(20일 3%↑) + MA20 상승 + 안정적 거래량.",
     "best_of_best":        "베스트오브베스트 — 위 스킬 중 2개 이상 동시 충족 종목만 선별.",
 }
@@ -45,16 +45,18 @@ def _color(v):
     return "#5c0000", "#ffacac"
 
 
-def _cell_html(data):
+def _cell_html(data, skill, week):
     if not data:
         return "<td></td>"
-    v      = data["mean"]
-    n      = data["n"]
-    wr     = data["win_rate"]
-    sign   = "+" if v >= 0 else ""
-    bg, fg = _color(v)
+    v        = data["mean"]
+    n        = data["n"]
+    wr       = data["win_rate"]
+    tickers  = data.get("tickers", "")
+    sign     = "+" if v >= 0 else ""
+    bg, fg   = _color(v)
+    onclick  = f"showTickers('{skill}','{week}',`{tickers}`)"
     return (
-        f'<td><span class="cell" style="background:{bg};color:{fg}">'
+        f'<td><span class="cell" style="background:{bg};color:{fg};cursor:pointer" onclick="{onclick}">'
         f'<span class="ret">{sign}{v:.1f}</span>'
         f'<span class="meta">n{n}·{wr}%</span>'
         f'</span></td>'
@@ -97,7 +99,7 @@ def _build_table(heatmap_data, benchmark, hold_weeks, flag, market_label, bm_lab
             f'<span class="tip-icon">?</span></span></td>'
         )
         for w in week_cols:
-            cells += _cell_html(data.get(w))
+            cells += _cell_html(data.get(w), sk, w)
         rows += f"<tr>{cells}</tr>\n"
 
     return f"""<div class="table-wrap">
@@ -188,20 +190,78 @@ def render(
   .insight-box {{ margin-top: 8px; margin-bottom: 24px; }}
   .insight-box li {{ font-size: 11px; line-height: 1.6; color: #ddd; }}
   .generated {{ font-size: 10px; color: #555; margin-top: 12px; }}
+
+  /* 팝업 */
+  .modal-bg {{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }}
+  .modal-bg.active {{ display:flex; align-items:center; justify-content:center; }}
+  .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:320px; max-width:480px; max-height:80vh; overflow-y:auto; }}
+  .modal-title {{ font-size:13px; font-weight:500; margin-bottom:12px; color:#ddd; }}
+  .modal-close {{ float:right; cursor:pointer; color:#888; font-size:16px; }}
+  .ticker-item {{ display:flex; justify-content:space-between; padding:6px 8px; margin:3px 0; border-radius:4px; font-size:11px; }}
+  .ticker-item.pos {{ background:#0d2e1a; color:#a8f0c6; }}
+  .ticker-item.neg {{ background:#2e0d0d; color:#ffacac; }}
+  .ticker-name {{ font-weight:500; }}
+  .ticker-ret {{ font-size:11px; }}
+  .ticker-date {{ font-size:10px; color:#888; margin-left:8px; }}
 </style>
 </head>
 <body>
+
 <div class="sub">
   지표: 5일 보유 신호 수익률(d5_return)의 주간 평균 · 셀 = 평균 수익률(%), 아래 = 표본수 n·승률<br>
   <b>🚩</b> 맨 왼쪽 시장 최악 일일 낙폭이 <b>-4%</b> 이하인 주는
   <span style="background:#e85555;color:#fff;padding:0 3px;border-radius:3px;font-size:9px;">HOLD</span> (현금 권장)
-  · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 에 마우스를 올리면 설명이 표시됩니다.
+  · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 에 마우스를 올리면 설명 · 셀 클릭 시 해당 종목 리스트
 </div>
+
 <h1>🇰🇷 KR — 주간 수익률 매트릭스</h1>
 {kr_table}
 {us_section}
 {insight_html}
 <p class="generated">생성일: {generated} · KIS OpenAPI 기반 자동 계산</p>
+
+<!-- 종목 팝업 -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-title" id="modalTitle">
+      <span class="modal-close" onclick="document.getElementById('modalBg').classList.remove('active')">✕</span>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+function showTickers(skill, week, raw) {{
+  const items = raw.split('|').filter(Boolean);
+  document.getElementById('modalTitle').innerHTML =
+    '<span class="modal-close" onclick="document.getElementById(\\'modalBg\\').classList.remove(\\'active\\')">✕</span>' +
+    skill + ' · ' + week + ' (' + items.length + '개 종목)';
+
+  let html = '';
+  items.forEach(item => {{
+    // 형식: TICKER(+1.2%,03/15)
+    const m = item.match(/^(.+?)\\(([+-]?[\\d.]+)%,([\\d/]+)\\)$/);
+    if (!m) return;
+    const [, ticker, ret, dt] = m;
+    const pos = parseFloat(ret) >= 0;
+    html += `<div class="ticker-item ${{pos?'pos':'neg'}}">
+      <span class="ticker-name">${{ticker}}</span>
+      <span>
+        <span class="ticker-ret">${{pos?'+':''}}${{ret}}%</span>
+        <span class="ticker-date">${{dt}}</span>
+      </span>
+    </div>`;
+  }});
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBg').classList.add('active');
+}}
+
+function closeModal(e) {{
+  if (e.target === document.getElementById('modalBg')) {{
+    document.getElementById('modalBg').classList.remove('active');
+  }}
+}}
+</script>
 </body>
 </html>"""
 
