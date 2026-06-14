@@ -1,6 +1,5 @@
 """
-스킬별 매수 신호 로직
-각 함수는 DataFrame을 받아 신호 발생일 날짜 목록을 반환
+스킬별 매수 신호 로직 v2 — 조건 완화 버전
 """
 
 import pandas as pd
@@ -9,53 +8,52 @@ from .indicators import add_all
 from collections import Counter
 
 
-def _prep(df: pd.DataFrame) -> pd.DataFrame:
+def _prep(df):
     if "ma20" not in df.columns:
         df = add_all(df)
     return df
 
-def _has_min_bars(df: pd.DataFrame, n: int = 120) -> bool:
+def _has_min_bars(df, n=60):
     return len(df) >= n
 
 
-def vcp(df: pd.DataFrame) -> list:
-    if not _has_min_bars(df, 120):
+def vcp(df):
+    if not _has_min_bars(df, 60):
         return []
     df = _prep(df)
     signals = []
-    for i in range(60, len(df)):
+    for i in range(40, len(df)):
         row    = df.iloc[i]
-        row_60 = df.iloc[i - 60]
-        if pd.isna(row["ma60"]) or pd.isna(row["atr_ratio"]):
+        row_40 = df.iloc[i - 40]
+        if pd.isna(row["ma20"]) or pd.isna(row["atr_ratio"]):
             continue
-        cond1 = row["pct_from_52w_high"] >= -25
-        cond2 = row["atr_ratio"] < row_60["atr_ratio"] * 0.6
-        cond3 = row["vol_ratio20"] < 1.0
-        cond4 = row["close"] > row["ma60"]
+        cond1 = row["pct_from_52w_high"] >= -35
+        cond2 = row["atr_ratio"] < row_40["atr_ratio"] * 0.8
+        cond3 = row["vol_ratio20"] < 1.2
+        cond4 = row["close"] > row["ma20"]
         if cond1 and cond2 and cond3 and cond4:
             signals.append(row["date"])
     return signals
 
 
-def sector_rotation(df: pd.DataFrame) -> list:
-    if not _has_min_bars(df, 80):
+def sector_rotation(df):
+    if not _has_min_bars(df, 60):
         return []
     df = _prep(df)
     signals = []
-    for i in range(60, len(df)):
+    for i in range(40, len(df)):
         row = df.iloc[i]
-        if pd.isna(row["mom60"]):
+        if pd.isna(row["mom20"]):
             continue
-        cond1 = row["mom20"] > 5
-        cond2 = row["mom60"] > 10
-        cond3 = row["vol_ratio20"] > 1.2
-        cond4 = row["close"] > row["ma20"] > row["ma60"]
-        if cond1 and cond2 and cond3 and cond4:
+        cond1 = row["mom20"] > 3
+        cond2 = row["vol_ratio20"] > 1.0
+        cond3 = row["close"] > row["ma20"]
+        if cond1 and cond2 and cond3:
             signals.append(row["date"])
     return signals
 
 
-def flow_momentum(df: pd.DataFrame) -> list:
+def flow_momentum(df):
     if not _has_min_bars(df, 30):
         return []
     df = _prep(df)
@@ -65,36 +63,36 @@ def flow_momentum(df: pd.DataFrame) -> list:
         prev = df.iloc[i - 1]
         if pd.isna(row["rsi14"]):
             continue
-        cond1 = row["vol_ratio20"] > 2.5
+        cond1 = row["vol_ratio20"] > 1.8
         cond2 = row["close"] > prev["close"]
         cond3 = row["close"] > row["ma20"]
-        cond4 = 40 <= row["rsi14"] <= 70
+        cond4 = 35 <= row["rsi14"] <= 75
         if cond1 and cond2 and cond3 and cond4:
             signals.append(row["date"])
     return signals
 
 
-def pre_surge(df: pd.DataFrame) -> list:
-    if not _has_min_bars(df, 80):
+def pre_surge(df):
+    if not _has_min_bars(df, 60):
         return []
     df = _prep(df)
     signals = []
-    for i in range(60, len(df)):
+    for i in range(40, len(df)):
         row    = df.iloc[i]
-        window = df["bb_width"].iloc[i-60:i]
+        window = df["bb_width"].iloc[i-40:i]
         if pd.isna(row["bb_width"]) or pd.isna(row["rsi14"]):
             continue
         bb_pct = (row["bb_width"] - window.min()) / (window.max() - window.min() + 1e-9)
-        cond1 = bb_pct < 0.15
-        cond2 = row["vol_ratio5"] < 0.7
+        cond1 = bb_pct < 0.25
+        cond2 = row["vol_ratio5"] < 0.9
         cond3 = row["close"] > row["bb_mid"]
-        cond4 = 45 <= row["rsi14"] <= 62
+        cond4 = 40 <= row["rsi14"] <= 65
         if cond1 and cond2 and cond3 and cond4:
             signals.append(row["date"])
     return signals
 
 
-def contrarian_reversal(df: pd.DataFrame) -> list:
+def contrarian_reversal(df):
     if not _has_min_bars(df, 30):
         return []
     df = _prep(df)
@@ -104,53 +102,52 @@ def contrarian_reversal(df: pd.DataFrame) -> list:
         prev = df.iloc[i - 1]
         if pd.isna(row["rsi14"]):
             continue
-        cond1 = row["rsi14"] < 30
+        cond1 = row["rsi14"] < 35
         cond2 = row["close"] > row["open"]
         cond3 = row["close"] > prev["low"]
-        cond4 = row["vol_ratio20"] > 1.0
-        if cond1 and cond2 and cond3 and cond4:
+        if cond1 and cond2 and cond3:
             signals.append(row["date"])
     return signals
 
 
-def narrative_momentum(df: pd.DataFrame) -> list:
-    if not _has_min_bars(df, 120):
+def narrative_momentum(df):
+    if not _has_min_bars(df, 60):
         return []
     df = _prep(df)
     signals = []
-    for i in range(60, len(df)):
+    for i in range(40, len(df)):
         row = df.iloc[i]
-        if pd.isna(row["ma60"]):
+        if pd.isna(row["mom20"]):
             continue
-        cond1 = row["high"] >= row["high_52w"] * 0.998
-        cond2 = row["mom20"] > 8
-        cond3 = row["vol_ratio20"] > 1.5
-        cond4 = row["ma5"] > row["ma20"] > row["ma60"]
+        cond1 = row["pct_from_52w_high"] >= -10
+        cond2 = row["mom20"] > 5
+        cond3 = row["vol_ratio20"] > 1.2
+        cond4 = row["ma5"] > row["ma20"]
         if cond1 and cond2 and cond3 and cond4:
             signals.append(row["date"])
     return signals
 
 
-def value_chain(df: pd.DataFrame) -> list:
-    if not _has_min_bars(df, 80):
+def value_chain(df):
+    if not _has_min_bars(df, 60):
         return []
     df = _prep(df)
     signals = []
-    for i in range(60, len(df)):
+    for i in range(40, len(df)):
         row       = df.iloc[i]
         ma20_prev = df["ma20"].iloc[i - 5]
-        if pd.isna(row["mom60"]) or pd.isna(row["rsi14"]):
+        if pd.isna(row["mom20"]) or pd.isna(row["rsi14"]):
             continue
-        cond1 = row["mom60"] > 15
+        cond1 = row["mom20"] > 3
         cond2 = row["ma20"] > ma20_prev
-        cond3 = 1.0 < row["vol_ratio20"] < 2.0
-        cond4 = 50 <= row["rsi14"] <= 65
+        cond3 = row["vol_ratio20"] > 0.8
+        cond4 = 45 <= row["rsi14"] <= 70
         if cond1 and cond2 and cond3 and cond4:
             signals.append(row["date"])
     return signals
 
 
-def best_of_best(df: pd.DataFrame) -> list:
+def best_of_best(df):
     skill_funcs = [vcp, sector_rotation, flow_momentum, pre_surge, narrative_momentum]
     all_signals = []
     for fn in skill_funcs:
