@@ -113,30 +113,14 @@ def get_kr_investor_flow(code: str, token: str) -> dict:
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
         raw = resp.json()
-        print(f"[KIS DEBUG {code}] rt_cd={raw.get('rt_cd')} msg={raw.get('msg1')} output={str(raw.get('output',''))[:200]}")
         output = raw.get("output", [])
         # output이 리스트면 첫번째, 딕셔너리면 그대로
         data = output[0] if isinstance(output, list) and output else output if isinstance(output, dict) else {}
 
-        # 금액(만원) 필드 우선, 없으면 수량*가격으로 계산
-        def to_bil(amt_str, qty_str, price_str):
-            amt = float(amt_str or 0)
-            if amt != 0:
-                return round(amt / 1e4, 1)  # 만원 → 억원
-            qty   = int(qty_str or 0)
-            price = float(price_str or 0)
-            return round(qty * price / 1e8, 1)
-
-        foreign_bil = to_bil(
-            data.get("frgn_ntby_amt", 0),
-            data.get("frgn_ntby_qty", 0),
-            data.get("stck_prpr", 0)
-        )
-        inst_bil = to_bil(
-            data.get("orgn_ntby_amt", 0),
-            data.get("orgn_ntby_qty", 0),
-            data.get("stck_prpr", 0)
-        )
+        # 수량 × 종가로 금액 계산 (stck_clpr = 당일 종가)
+        price = float(data.get("stck_clpr") or data.get("stck_prpr") or 0)
+        foreign_bil = round(int(data.get("frgn_ntby_qty") or 0) * price / 1e8, 1)
+        inst_bil    = round(int(data.get("orgn_ntby_qty") or 0) * price / 1e8, 1)
         return {
             "foreign": foreign_bil,
             "institution": inst_bil,
