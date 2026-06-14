@@ -10,6 +10,7 @@ from skill_heatmap.kis_api     import KisAPI
 from skill_heatmap.heatmap     import run_skill_heatmap, pivot_for_heatmap
 from skill_heatmap.render_html import render
 from skill_heatmap.insight     import generate_insights
+from skill_heatmap.scanner     import scan_current_signals, format_scan_results
 
 BENCHMARK_KOSPI = {
     "W06": -0.3, "W07": +2.3, "W08": -1.0,
@@ -35,47 +36,56 @@ def main():
     kis   = KisAPI()
     start = f"{last_year - 1}0101"
     end   = today.strftime("%Y%m%d")
-
-    # 종목명 매핑
     name_map_kr = kis._kr_names
 
-    # ── KR ───────────────────────────────────────────────
-    print("[1/2] KR 데이터 수집 중...")
-    tickers_kr = kis.get_ticker_list("KOSPI")
-    ohlcv_kr   = kis.batch_ohlcv(tickers_kr, start, end, market="KR")
-    print(f"  KR 조회 완료: {len(ohlcv_kr)}개 종목")
+    # ── KR 코스피 ─────────────────────────────────────────
+    print("[1/3] KR 코스피 데이터 수집 중...")
+    tickers_kospi = kis.get_ticker_list("KOSPI")
+    ohlcv_kospi   = kis.batch_ohlcv(tickers_kospi, start, end, market="KR")
+    print(f"  코스피 조회 완료: {len(ohlcv_kospi)}개 종목")
+    heatmap_kospi_25 = pivot_for_heatmap(run_skill_heatmap(ohlcv_kospi, year=last_year, name_map=name_map_kr))
+    heatmap_kospi_26 = pivot_for_heatmap(run_skill_heatmap(ohlcv_kospi, year=this_year, name_map=name_map_kr))
 
-    result_kr_25 = run_skill_heatmap(ohlcv_kr, year=last_year,  name_map=name_map_kr)
-    result_kr_26 = run_skill_heatmap(ohlcv_kr, year=this_year,  name_map=name_map_kr)
-    heatmap_kr_25 = pivot_for_heatmap(result_kr_25)
-    heatmap_kr_26 = pivot_for_heatmap(result_kr_26)
-    print(f"  KR 집계 완료: 25년 {len(result_kr_25)}행 / 26년 {len(result_kr_26)}행")
+    # ── KR 코스닥 ─────────────────────────────────────────
+    print("[2/3] KR 코스닥 데이터 수집 중...")
+    tickers_kosdaq = kis.get_ticker_list("KOSDAQ")
+    ohlcv_kosdaq   = kis.batch_ohlcv(tickers_kosdaq, start, end, market="KR")
+    print(f"  코스닥 조회 완료: {len(ohlcv_kosdaq)}개 종목")
+    heatmap_kosdaq_25 = pivot_for_heatmap(run_skill_heatmap(ohlcv_kosdaq, year=last_year, name_map=name_map_kr))
+    heatmap_kosdaq_26 = pivot_for_heatmap(run_skill_heatmap(ohlcv_kosdaq, year=this_year, name_map=name_map_kr))
 
     # ── US ───────────────────────────────────────────────
-    print("[2/2] US 데이터 수집 중...")
+    print("[3/3] US 데이터 수집 중...")
     tickers_us = kis.get_ticker_list("US")
     ohlcv_us   = kis.batch_ohlcv(tickers_us, start, end, market="US")
     print(f"  US 조회 완료: {len(ohlcv_us)}개 종목")
+    heatmap_us_25 = pivot_for_heatmap(run_skill_heatmap(ohlcv_us, year=last_year))
+    heatmap_us_26 = pivot_for_heatmap(run_skill_heatmap(ohlcv_us, year=this_year))
 
-    result_us_25 = run_skill_heatmap(ohlcv_us, year=last_year)
-    result_us_26 = run_skill_heatmap(ohlcv_us, year=this_year)
-    heatmap_us_25 = pivot_for_heatmap(result_us_25)
-    heatmap_us_26 = pivot_for_heatmap(result_us_26)
-    print(f"  US 집계 완료: 25년 {len(result_us_25)}행 / 26년 {len(result_us_26)}행")
-
-    # ── 인사이트 (2025 기준) ──────────────────────────────
-    insights = generate_insights(heatmap_kr_26, heatmap_us_26)
+    # ── 인사이트 (2026 기준) ──────────────────────────────
+    insights = generate_insights(heatmap_kospi_26, heatmap_us_26)
     print(f"  인사이트 {len(insights)}개 생성")
+
+    # ── 진입 후보 스캔 ────────────────────────────────────
+    print("  진입 후보 스캔 중...")
+    ohlcv_all_kr = {**ohlcv_kospi, **ohlcv_kosdaq}
+    kr_signals   = scan_current_signals(ohlcv_all_kr, name_map=name_map_kr, market="KR")
+    us_signals   = scan_current_signals(ohlcv_us, market="US")
+    scan_results = format_scan_results(kr_signals, us_signals)
+    print(f"  스캔 완료")
 
     # ── HTML 렌더링 ───────────────────────────────────────
     render(
-        heatmap_kr_25 = heatmap_kr_25,
-        heatmap_kr_26 = heatmap_kr_26,
-        output_path   = args.output,
-        benchmark_kr  = BENCHMARK_KOSPI,
-        heatmap_us_25 = heatmap_us_25 if ohlcv_us else None,
-        heatmap_us_26 = heatmap_us_26 if ohlcv_us else None,
-        insights      = insights,
+        heatmap_kospi_25  = heatmap_kospi_25,
+        heatmap_kospi_26  = heatmap_kospi_26,
+        heatmap_kosdaq_25 = heatmap_kosdaq_25,
+        heatmap_kosdaq_26 = heatmap_kosdaq_26,
+        heatmap_us_25     = heatmap_us_25,
+        heatmap_us_26     = heatmap_us_26,
+        output_path       = args.output,
+        benchmark_kr      = BENCHMARK_KOSPI,
+        insights          = insights,
+        scan_results      = scan_results,
     )
     print(f"[DONE] {args.output}")
 
