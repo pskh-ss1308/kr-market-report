@@ -31,8 +31,6 @@
   .skill-name:hover::after { content: attr(data-tip); position: absolute; left: 0; top: 18px; background: #1e2530; color: #ddd; font-size: 10px; line-height: 1.5; padding: 6px 10px; border-radius: 4px; border: 1px solid #444; white-space: normal; width: 240px; z-index: 99; }
   .insight-box { margin-top: 8px; margin-bottom: 24px; }
   .insight-box li { font-size: 11px; line-height: 1.6; color: #ddd; }
-
-  /* 복수 스킬 서머리 */
   .summary-box { margin-top: 32px; margin-bottom: 24px; }
   .summary-market { font-size: 11px; color: #888; margin: 10px 0 6px; }
   .summary-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 3px 0; border-radius: 4px; background: #1a1f2e; flex-wrap: wrap; }
@@ -42,7 +40,22 @@
   .summary-skills { font-size: 10px; color: #888; flex: 1; }
   .summary-date { font-size: 10px; color: #666; white-space: nowrap; }
 
-  /* 진입 후보 */
+  /* 스킬 필터 */
+  .filter-box { margin-top: 32px; margin-bottom: 24px; background: #111827; border: 1px solid #1e2530; border-radius: 8px; padding: 16px; }
+  .filter-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .skill-check { display: flex; align-items: center; gap: 4px; cursor: pointer; background: #1a1f2e; border: 1px solid #333; border-radius: 4px; padding: 4px 10px; font-size: 11px; color: #ccc; }
+  .skill-check input { accent-color: #2a9a55; cursor: pointer; }
+  .skill-check:has(input:checked) { border-color: #2a9a55; color: #fff; background: #0d2e1a; }
+  .filter-options { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .radio-label { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #ccc; cursor: pointer; }
+  .radio-label input { accent-color: #2a9a55; }
+  .clear-btn, .all-btn { padding: 3px 10px; border-radius: 4px; border: 1px solid #444; background: #1a1f2e; color: #888; font-size: 10px; cursor: pointer; }
+  .clear-btn:hover, .all-btn:hover { border-color: #2a9a55; color: #2a9a55; }
+  .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab-btn { padding: 5px 16px; border-radius: 4px; border: 1px solid #333; background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer; }
+  .tab-btn.active { background: #2a9a55; color: #fff; border-color: #2a9a55; }
+  .filter-result { background: #0e1117; border-radius: 4px; padding: 8px; min-height: 60px; overflow-x: auto; }
+
   .candidate-box { margin-top: 32px; margin-bottom: 24px; }
   .cand-sub { font-size: 10px; color: #888; margin-bottom: 10px; }
   .cand-table td { vertical-align: top; padding: 6px 4px; border-bottom: 1px solid #1e2530; }
@@ -54,8 +67,6 @@
   .cand-price { color: #4caf7d; margin-left: 4px; font-size: 10px; }
   .cand-date { color: #888; margin-left: 4px; font-size: 10px; }
   .generated { font-size: 10px; color: #555; margin-top: 12px; }
-
-  /* 팝업 */
   .modal-bg { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }
   .modal-bg.active { display:flex; align-items:center; justify-content:center; }
   .modal { background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }
@@ -422,9 +433,157 @@
 </div>
   
 </div>
+<div class="filter-box">
+  <h2>🔍 스킬 필터 — W25 진입 후보 검색 (06/15~ 대응)</h2>
+  <p class="cand-sub">원하는 스킬을 선택하면 해당 조건을 만족하는 종목만 표시됩니다</p>
+
+  <div class="filter-skills">
+<label class="skill-check" title="VCP (Volatility Contraction Pattern) — 변동성 수축 후 신고가 돌파 패턴. Mark Minervini 전략 기반.">
+  <input type="checkbox" value="vcp" onchange="filterStocks()">
+  <span>vcp</span>
+</label>
+<label class="skill-check" title="섹터 로테이션 — 20일 모멘텀 상위 + 거래량 증가 종목 추종.">
+  <input type="checkbox" value="sector_rotation" onchange="filterStocks()">
+  <span>sector_rotation</span>
+</label>
+<label class="skill-check" title="플로우 모멘텀 — 거래량 폭발(평균 1.8배↑) + 당일 양봉 + MA20 위.">
+  <input type="checkbox" value="flow_momentum" onchange="filterStocks()">
+  <span>flow_momentum</span>
+</label>
+<label class="skill-check" title="급등 전 징후 — 볼린저밴드 수축 + 거래량 급감 후 반등 조짐 포착.">
+  <input type="checkbox" value="pre_surge" onchange="filterStocks()">
+  <span>pre_surge</span>
+</label>
+<label class="skill-check" title="역추세 반전 — RSI 35 이하 과매도 구간에서 당일 양봉 전환 신호.">
+  <input type="checkbox" value="contrarian_reversal" onchange="filterStocks()">
+  <span>contrarian_reversal</span>
+</label>
+<label class="skill-check" title="내러티브 모멘텀 — 52주 신고가 근처(-20%) + 강한 단기 모멘텀 추종.">
+  <input type="checkbox" value="narrative_momentum" onchange="filterStocks()">
+  <span>narrative_momentum</span>
+</label>
+<label class="skill-check" title="밸류체인 — 중기 모멘텀(20일 3%↑) + MA20 상승 + 안정적 거래량.">
+  <input type="checkbox" value="value_chain" onchange="filterStocks()">
+  <span>value_chain</span>
+</label></div>
+
+  <div class="filter-options">
+    <label class="radio-label">
+      <input type="radio" name="filterMode" value="any" checked onchange="filterStocks()">
+      선택한 스킬 중 1개 이상
+    </label>
+    <label class="radio-label">
+      <input type="radio" name="filterMode" value="all" onchange="filterStocks()">
+      선택한 스킬 모두 충족
+    </label>
+    <button class="clear-btn" onclick="clearFilter()">전체 해제</button>
+    <button class="all-btn" onclick="selectAll()">전체 선택</button>
+  </div>
+
+  <div class="filter-tabs">
+    <button class="tab-btn active" onclick="switchFilterTab('KR', this)">🇰🇷 KR</button>
+    <button class="tab-btn" onclick="switchFilterTab('US', this)">🇺🇸 US</button>
+    <button class="tab-btn" onclick="switchFilterTab('ALL', this)">전체</button>
+  </div>
+
+  <div id="filterResult" class="filter-result">
+    <p style="color:#666;font-size:11px;padding:12px">스킬을 선택해주세요</p>
+  </div>
+</div>
+
+<script>
+const STOCK_DATA = [{"name": "HPSP(403870)", "price": "71,500원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "KB금융(105560)", "price": "161,200원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "LG이노텍(011070)", "price": "1,036,000원", "date": "06/09", "skill": "sector_rotation", "market": "KR"}, {"name": "LG전자(066570)", "price": "225,500원", "date": "06/05", "skill": "sector_rotation", "market": "KR"}, {"name": "NAVER(035420)", "price": "247,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "SK스퀘어(402340)", "price": "1,358,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "SK텔레콤(017670)", "price": "103,000원", "date": "06/09", "skill": "sector_rotation", "market": "KR"}, {"name": "SK하이닉스(000660)", "price": "2,150,000원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "기가비스(420770)", "price": "146,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "기업은행(024110)", "price": "21,800원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "네이처셀(007390)", "price": "32,000원", "date": "06/05", "skill": "sector_rotation", "market": "KR"}, {"name": "대덕전자(353200)", "price": "165,200원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "대한항공(003490)", "price": "26,600원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "두산(000150)", "price": "1,896,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "두산로보틱스(454910)", "price": "110,400원", "date": "06/08", "skill": "sector_rotation", "market": "KR"}, {"name": "디앤디파마텍(347850)", "price": "87,500원", "date": "06/09", "skill": "sector_rotation", "market": "KR"}, {"name": "로보스타(090360)", "price": "113,200원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "브이엠(089970)", "price": "97,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "삼성물산(028260)", "price": "432,000원", "date": "06/05", "skill": "sector_rotation", "market": "KR"}, {"name": "삼성생명(032830)", "price": "385,500원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "삼성전기(009150)", "price": "1,714,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "삼성화재(000810)", "price": "654,000원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "서진시스템(178320)", "price": "75,100원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "성호전자(043260)", "price": "46,650원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "신세계(004170)", "price": "695,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "신한지주(055550)", "price": "99,600원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "심텍(222800)", "price": "130,100원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "에이치브이엠(295310)", "price": "103,400원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "엘앤씨바이오(290650)", "price": "76,900원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "원익IPS(240810)", "price": "183,300원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "원익QnC(074600)", "price": "42,150원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "유진테크(084370)", "price": "196,100원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "이오테크닉스(039030)", "price": "612,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "제주반도체(080220)", "price": "102,500원", "date": "06/08", "skill": "sector_rotation", "market": "KR"}, {"name": "주성엔지니어링(036930)", "price": "231,000원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "카카오뱅크(323410)", "price": "23,750원", "date": "06/11", "skill": "sector_rotation", "market": "KR"}, {"name": "코미코(183300)", "price": "124,900원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "코웨이(021240)", "price": "89,000원", "date": "06/05", "skill": "sector_rotation", "market": "KR"}, {"name": "테스(095610)", "price": "182,200원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "테크윙(089030)", "price": "65,300원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "티에스이(131290)", "price": "270,500원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "파크시스템스(140860)", "price": "339,500원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "피에스케이(319660)", "price": "169,900원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "피에스케이홀딩스(031980)", "price": "152,300원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "하나마이크론(067310)", "price": "48,950원", "date": "06/12", "skill": "sector_rotation", "market": "KR"}, {"name": "한국타이어앤테크놀로지(161390)", "price": "72,000원", "date": "06/10", "skill": "sector_rotation", "market": "KR"}, {"name": "GST(083450)", "price": "64,900원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "HD현대마린솔루션(443060)", "price": "247,500원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "HD현대일렉트릭(267260)", "price": "1,130,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "HPSP(403870)", "price": "71,500원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "ISC(095340)", "price": "230,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "KB금융(105560)", "price": "161,200원", "date": "06/05", "skill": "flow_momentum", "market": "KR"}, {"name": "NAVER(035420)", "price": "247,000원", "date": "06/08", "skill": "flow_momentum", "market": "KR"}, {"name": "SK텔레콤(017670)", "price": "103,000원", "date": "06/08", "skill": "flow_momentum", "market": "KR"}, {"name": "고영(098460)", "price": "39,150원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "대덕전자(353200)", "price": "165,200원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "동진쎄미켐(005290)", "price": "59,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "로보스타(090360)", "price": "113,200원", "date": "06/05", "skill": "flow_momentum", "market": "KR"}, {"name": "로보티즈(108490)", "price": "330,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "리노공업(058470)", "price": "104,500원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "브이엠(089970)", "price": "97,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "비에이치아이(083650)", "price": "80,600원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "삼현(437730)", "price": "53,700원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "솔브레인(357780)", "price": "441,500원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "신한지주(055550)", "price": "99,600원", "date": "06/05", "skill": "flow_momentum", "market": "KR"}, {"name": "심텍(222800)", "price": "130,100원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "에스엠(041510)", "price": "83,600원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "에이치브이엠(295310)", "price": "103,400원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "오름테라퓨틱(475830)", "price": "67,900원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "원익IPS(240810)", "price": "183,300원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "원익QnC(074600)", "price": "42,150원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "원익홀딩스(030530)", "price": "31,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "유진테크(084370)", "price": "196,100원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "이오테크닉스(039030)", "price": "612,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "주성엔지니어링(036930)", "price": "231,000원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "카카오뱅크(323410)", "price": "23,750원", "date": "06/09", "skill": "flow_momentum", "market": "KR"}, {"name": "테스(095610)", "price": "182,200원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "테크윙(089030)", "price": "65,300원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "티에스이(131290)", "price": "270,500원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "파크시스템스(140860)", "price": "339,500원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "피에스케이(319660)", "price": "169,900원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "피에스케이홀딩스(031980)", "price": "152,300원", "date": "06/10", "skill": "flow_momentum", "market": "KR"}, {"name": "한미반도체(042700)", "price": "361,000원", "date": "06/12", "skill": "flow_momentum", "market": "KR"}, {"name": "현대무벡스(319400)", "price": "39,150원", "date": "06/11", "skill": "flow_momentum", "market": "KR"}, {"name": "HD현대마린솔루션(443060)", "price": "247,500원", "date": "06/12", "skill": "pre_surge", "market": "KR"}, {"name": "KT&G(033780)", "price": "187,800원", "date": "06/12", "skill": "pre_surge", "market": "KR"}, {"name": "S-Oil(010950)", "price": "111,400원", "date": "06/05", "skill": "pre_surge", "market": "KR"}, {"name": "SK스퀘어(402340)", "price": "1,358,000원", "date": "06/05", "skill": "pre_surge", "market": "KR"}, {"name": "SK하이닉스(000660)", "price": "2,150,000원", "date": "06/12", "skill": "pre_surge", "market": "KR"}, {"name": "기가비스(420770)", "price": "146,000원", "date": "06/10", "skill": "pre_surge", "market": "KR"}, {"name": "기업은행(024110)", "price": "21,800원", "date": "06/10", "skill": "pre_surge", "market": "KR"}, {"name": "메리츠금융지주(138040)", "price": "108,900원", "date": "06/12", "skill": "pre_surge", "market": "KR"}, {"name": "우리금융지주(316140)", "price": "31,150원", "date": "06/12", "skill": "pre_surge", "market": "KR"}, {"name": "파두(440110)", "price": "101,000원", "date": "06/05", "skill": "pre_surge", "market": "KR"}, {"name": "파크시스템스(140860)", "price": "339,500원", "date": "06/05", "skill": "pre_surge", "market": "KR"}, {"name": "DB손해보험(005830)", "price": "148,200원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "HD현대일렉트릭(267260)", "price": "1,130,000원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "HK이노엔(195940)", "price": "41,700원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "JYP Ent.(035900)", "price": "55,900원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "KT(030200)", "price": "54,800원", "date": "06/08", "skill": "contrarian_reversal", "market": "KR"}, {"name": "LS(006260)", "price": "386,500원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "LS마린솔루션(060370)", "price": "30,300원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "LS머트리얼즈(417200)", "price": "16,600원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "POSCO홀딩스(005490)", "price": "377,000원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "SK이노베이션(096770)", "price": "106,100원", "date": "06/12", "skill": "contrarian_reversal", "market": "KR"}, {"name": "고려아연(010130)", "price": "1,201,000원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "대우건설(047040)", "price": "21,850원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "대주전자재료(078600)", "price": "120,800원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "대한전선(001440)", "price": "37,850원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "두산에너빌리티(034020)", "price": "93,100원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "레이크머티리얼즈(281740)", "price": "16,490원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "리가켐바이오(141080)", "price": "129,200원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "리브스메드(491000)", "price": "41,300원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "메지온(140410)", "price": "64,700원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "미래에셋벤처투자(100790)", "price": "38,800원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "미래에셋증권(006800)", "price": "52,300원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "보로노이(310210)", "price": "193,500원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "비에이치아이(083650)", "price": "80,600원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "비츠로셀(082920)", "price": "46,900원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "산일전기(062040)", "price": "231,500원", "date": "06/08", "skill": "contrarian_reversal", "market": "KR"}, {"name": "삼성에피스홀딩스(0126Z0)", "price": "446,500원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "삼양식품(003230)", "price": "1,145,000원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "삼천당제약(000250)", "price": "261,500원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "삼표시멘트(038500)", "price": "11,530원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "셀트리온제약(068760)", "price": "42,900원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "신성델타테크(065350)", "price": "41,150원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "실리콘투(257720)", "price": "34,650원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "쎄트렉아이(099320)", "price": "117,800원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "씨어스(458870)", "price": "29,500원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "씨엠티엑스(388210)", "price": "118,600원", "date": "06/05", "skill": "contrarian_reversal", "market": "KR"}, {"name": "아이티센글로벌(124500)", "price": "43,700원", "date": "06/05", "skill": "contrarian_reversal", "market": "KR"}, {"name": "알지노믹스(476830)", "price": "92,300원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "에스앤에스텍(101490)", "price": "63,900원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "에스엠(041510)", "price": "83,600원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "에이비엘바이오(298380)", "price": "91,100원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "에임드바이오(0009K0)", "price": "27,200원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "우리기술(032820)", "price": "17,570원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "인텔리안테크(189300)", "price": "104,800원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "차바이오텍(085660)", "price": "11,880원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "케어젠(214370)", "price": "74,800원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "크래프톤(259960)", "price": "237,000원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "펄어비스(263750)", "price": "41,150원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "포스코인터내셔널(047050)", "price": "59,400원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "하림지주(003380)", "price": "10,410원", "date": "06/11", "skill": "contrarian_reversal", "market": "KR"}, {"name": "하이브(352820)", "price": "225,000원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "한국항공우주(047810)", "price": "140,900원", "date": "06/10", "skill": "contrarian_reversal", "market": "KR"}, {"name": "한화솔루션(009830)", "price": "37,000원", "date": "06/09", "skill": "contrarian_reversal", "market": "KR"}, {"name": "한화에어로스페이스(012450)", "price": "1,078,000원", "date": "06/12", "skill": "contrarian_reversal", "market": "KR"}, {"name": "휴림로봇(090710)", "price": "11,730원", "date": "06/08", "skill": "contrarian_reversal", "market": "KR"}, {"name": "HPSP(403870)", "price": "71,500원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "KB금융(105560)", "price": "161,200원", "date": "06/05", "skill": "narrative_momentum", "market": "KR"}, {"name": "NAVER(035420)", "price": "247,000원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "SK스퀘어(402340)", "price": "1,358,000원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "기가비스(420770)", "price": "146,000원", "date": "06/11", "skill": "narrative_momentum", "market": "KR"}, {"name": "네이처셀(007390)", "price": "32,000원", "date": "06/05", "skill": "narrative_momentum", "market": "KR"}, {"name": "두산로보틱스(454910)", "price": "110,400원", "date": "06/05", "skill": "narrative_momentum", "market": "KR"}, {"name": "로보스타(090360)", "price": "113,200원", "date": "06/08", "skill": "narrative_momentum", "market": "KR"}, {"name": "브이엠(089970)", "price": "97,000원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "삼성화재(000810)", "price": "654,000원", "date": "06/11", "skill": "narrative_momentum", "market": "KR"}, {"name": "성호전자(043260)", "price": "46,650원", "date": "06/05", "skill": "narrative_momentum", "market": "KR"}, {"name": "신세계(004170)", "price": "695,000원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "신한지주(055550)", "price": "99,600원", "date": "06/05", "skill": "narrative_momentum", "market": "KR"}, {"name": "심텍(222800)", "price": "130,100원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "원익IPS(240810)", "price": "183,300원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "유진테크(084370)", "price": "196,100원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "주성엔지니어링(036930)", "price": "231,000원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "코미코(183300)", "price": "124,900원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "테스(095610)", "price": "182,200원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "테크윙(089030)", "price": "65,300원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "티에스이(131290)", "price": "270,500원", "date": "06/11", "skill": "narrative_momentum", "market": "KR"}, {"name": "피에스케이(319660)", "price": "169,900원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "피에스케이홀딩스(031980)", "price": "152,300원", "date": "06/12", "skill": "narrative_momentum", "market": "KR"}, {"name": "HPSP(403870)", "price": "71,500원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "LG이노텍(011070)", "price": "1,036,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "LG전자(066570)", "price": "225,500원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "NAVER(035420)", "price": "247,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "SK(034730)", "price": "593,000원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "SK스퀘어(402340)", "price": "1,358,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "SK텔레콤(017670)", "price": "103,000원", "date": "06/10", "skill": "value_chain", "market": "KR"}, {"name": "SK하이닉스(000660)", "price": "2,150,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "기가비스(420770)", "price": "146,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "네이처셀(007390)", "price": "32,000원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "대덕전자(353200)", "price": "165,200원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "두산로보틱스(454910)", "price": "110,400원", "date": "06/08", "skill": "value_chain", "market": "KR"}, {"name": "디앤디파마텍(347850)", "price": "87,500원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "로보스타(090360)", "price": "113,200원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "브이엠(089970)", "price": "97,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "삼성물산(028260)", "price": "432,000원", "date": "06/05", "skill": "value_chain", "market": "KR"}, {"name": "삼성생명(032830)", "price": "385,500원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "삼성에스디에스(018260)", "price": "237,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "삼성전기(009150)", "price": "1,714,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "삼성전자(005930)", "price": "322,500원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "삼성전자우(005935)", "price": "207,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "삼성화재(000810)", "price": "654,000원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "서진시스템(178320)", "price": "75,100원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "성호전자(043260)", "price": "46,650원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "신세계(004170)", "price": "695,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "신한지주(055550)", "price": "99,600원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "심텍(222800)", "price": "130,100원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "에이치브이엠(295310)", "price": "103,400원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "엘앤씨바이오(290650)", "price": "76,900원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "원익IPS(240810)", "price": "183,300원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "유진테크(084370)", "price": "196,100원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "이오테크닉스(039030)", "price": "612,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "제주반도체(080220)", "price": "102,500원", "date": "06/08", "skill": "value_chain", "market": "KR"}, {"name": "주성엔지니어링(036930)", "price": "231,000원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "카카오뱅크(323410)", "price": "23,750원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "코미코(183300)", "price": "124,900원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "코웨이(021240)", "price": "89,000원", "date": "06/05", "skill": "value_chain", "market": "KR"}, {"name": "테스(095610)", "price": "182,200원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "테크윙(089030)", "price": "65,300원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "티에스이(131290)", "price": "270,500원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "피에스케이(319660)", "price": "169,900원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "피에스케이홀딩스(031980)", "price": "152,300원", "date": "06/12", "skill": "value_chain", "market": "KR"}, {"name": "한국타이어앤테크놀로지(161390)", "price": "72,000원", "date": "06/10", "skill": "value_chain", "market": "KR"}, {"name": "한진칼(180640)", "price": "119,900원", "date": "06/11", "skill": "value_chain", "market": "KR"}, {"name": "현대모비스(012330)", "price": "607,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}, {"name": "현대오토에버(307950)", "price": "684,000원", "date": "06/09", "skill": "value_chain", "market": "KR"}];
+let currentMarket = 'KR';
+
+function switchFilterTab(market, btn) {
+  currentMarket = market;
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterStocks();
+}
+
+function filterStocks() {
+  const checked = [...document.querySelectorAll('.filter-skills input:checked')].map(c => c.value);
+  const mode    = document.querySelector('input[name="filterMode"]:checked').value;
+
+  if (checked.length === 0) {
+    document.getElementById('filterResult').innerHTML = '<p style="color:#666;font-size:11px;padding:12px">스킬을 선택해주세요</p>';
+    return;
+  }
+
+  // 종목별로 스킬 목록 집계
+  const stockMap = {};
+  STOCK_DATA.forEach(item => {
+    if (currentMarket !== 'ALL' && item.market !== currentMarket) return;
+    if (!stockMap[item.name]) {
+      stockMap[item.name] = { skills: [], price: item.price, date: item.date, market: item.market };
+    }
+    stockMap[item.name].skills.push(item.skill);
+  });
+
+  // 필터링
+  const filtered = Object.entries(stockMap).filter(([name, v]) => {
+    if (mode === 'any') return checked.some(sk => v.skills.includes(sk));
+    if (mode === 'all') return checked.every(sk => v.skills.includes(sk));
+    return false;
+  });
+
+  // 정렬: 감지 스킬 수 많은 순
+  filtered.sort((a, b) => b[1].skills.length - a[1].skills.length);
+
+  if (filtered.length === 0) {
+    document.getElementById('filterResult').innerHTML = '<p style="color:#666;font-size:11px;padding:12px">해당 조건을 만족하는 종목이 없습니다</p>';
+    return;
+  }
+
+  let html = `<div style="font-size:10px;color:#888;margin-bottom:8px;">${filtered.length}개 종목 검색됨</div>`;
+  html += '<table style="width:100%;border-collapse:collapse;">';
+  html += '<thead><tr style="font-size:10px;color:#666;border-bottom:1px solid #1e2530;">';
+  html += '<th style="text-align:left;padding:4px 6px;">종목</th>';
+  html += '<th style="text-align:left;padding:4px 6px;">현재가</th>';
+  html += '<th style="text-align:left;padding:4px 6px;">감지 스킬</th>';
+  html += '<th style="text-align:right;padding:4px 6px;">신호일</th>';
+  html += '</tr></thead><tbody>';
+
+  filtered.forEach(([name, v]) => {
+    const cnt     = v.skills.filter(s => checked.includes(s)).length;
+    const badgeStyle = cnt >= 3 ? 'background:#0d5c2e;color:#a8f0c6' :
+                       cnt >= 2 ? 'background:#1a7a40;color:#b8f5cd' :
+                                  'background:#2a9a55;color:#c8fad8';
+    const flag = v.market === 'KR' ? '🇰🇷' : '🇺🇸';
+    const skills = v.skills.map(s => checked.includes(s)
+      ? `<span style="background:#2a9a55;color:#fff;border-radius:3px;padding:1px 5px;font-size:9px;margin:1px;">${s}</span>`
+      : `<span style="background:#333;color:#888;border-radius:3px;padding:1px 5px;font-size:9px;margin:1px;">${s}</span>`
+    ).join(' ');
+
+    html += `<tr style="border-bottom:1px solid #1a1f2e;">
+      <td style="padding:5px 6px;font-size:11px;font-weight:500;">
+        ${flag} ${name}
+        <span style="border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;${badgeStyle}">${cnt}개</span>
+      </td>
+      <td style="padding:5px 6px;font-size:11px;color:#4caf7d;">${v.price}</td>
+      <td style="padding:5px 6px;">${skills}</td>
+      <td style="padding:5px 6px;font-size:10px;color:#666;text-align:right;">${v.date}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('filterResult').innerHTML = html;
+}
+
+function clearFilter() {
+  document.querySelectorAll('.filter-skills input').forEach(c => c.checked = false);
+  filterStocks();
+}
+
+function selectAll() {
+  document.querySelectorAll('.filter-skills input').forEach(c => c.checked = true);
+  filterStocks();
+}
+</script>
 <div class="candidate-box">
-  <h2>🎯 W25 진입 후보 (06/15~ 대응)</h2>
-  <p class="cand-sub">현재 시점 기준 각 스킬 조건을 만족하는 종목 · 다음 주 월요일(06/15) 진입 검토</p>
+  <h2>🎯 W25 전체 진입 후보 (06/15~ 대응)</h2>
+  <p class="cand-sub">현재 시점 기준 각 스킬 조건을 만족하는 종목 전체 목록</p>
   <div class="table-wrap">
   <table class="cand-table">
     <thead><tr>
