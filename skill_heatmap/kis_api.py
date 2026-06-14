@@ -29,18 +29,28 @@ class KisAPI:
             df = fdr.DataReader(ticker, start, end)
             if df is None or df.empty:
                 return pd.DataFrame()
+            # 인덱스가 날짜인 경우 reset
             df = df.reset_index()
-            df = df.rename(columns={
-                "Date":   "date",
-                "Open":   "open",
-                "High":   "high",
-                "Low":    "low",
-                "Close":  "close",
-                "Volume": "volume",
-            })
-            cols = [c for c in ["date","open","high","low","close","volume"] if c in df.columns]
+            # 컬럼명 소문자 통일
+            df.columns = [c.lower() for c in df.columns]
+            # 날짜 컬럼 찾기 (date 또는 index)
+            date_col = None
+            for c in ["date", "datetime", "time", "index"]:
+                if c in df.columns:
+                    date_col = c
+                    break
+            if date_col is None:
+                print(f"[WARN] {ticker}: 날짜 컬럼 없음 {df.columns.tolist()}")
+                return pd.DataFrame()
+            if date_col != "date":
+                df = df.rename(columns={date_col: "date"})
+            # 필요 컬럼만 선택
+            need = ["date","open","high","low","close","volume"]
+            cols = [c for c in need if c in df.columns]
             df = df[cols]
-            df[["open","high","low","close","volume"]] = df[["open","high","low","close","volume"]].apply(pd.to_numeric, errors="coerce")
+            for c in cols:
+                if c != "date":
+                    df[c] = pd.to_numeric(df[c], errors="coerce")
             df["date"] = pd.to_datetime(df["date"])
             return df.sort_values("date").reset_index(drop=True)
         except Exception as e:
@@ -51,7 +61,16 @@ class KisAPI:
         try:
             if market == "US":
                 df = fdr.StockListing("S&P500")
-                return df["Symbol"].dropna().tolist()[:50]
+                print(f"  S&P500 컬럼: {df.columns.tolist()}")
+                # Symbol 또는 Code 컬럼
+                sym_col = None
+                for c in ["Symbol", "Code", "symbol", "code"]:
+                    if c in df.columns:
+                        sym_col = c
+                        break
+                if sym_col is None:
+                    raise ValueError(f"심볼 컬럼 없음: {df.columns.tolist()}")
+                return df[sym_col].dropna().tolist()[:50]
             else:
                 df = fdr.StockListing("KOSPI")
                 if "Marcap" in df.columns:
@@ -59,11 +78,16 @@ class KisAPI:
                 return df["Code"].dropna().astype(str).tolist()
         except Exception as e:
             print(f"[WARN] get_ticker_list {market}: {e}")
+            if market == "US":
+                return [
+                    "AAPL","MSFT","NVDA","AMZN","META",
+                    "GOOGL","TSLA","AVGO","AMD","ORCL",
+                    "NFLX","CRM","ADBE","QCOM","INTC",
+                    "MU","AMAT","LRCX","KLAC","MRVL",
+                ]
             return [
                 "005930","000660","051910","005380","035420",
                 "000270","068270","105560","028260","012330",
-                "003550","034730","018260","032830","096770",
-                "017670","055550","316140","086790","033780",
             ]
 
     def batch_ohlcv(self, tickers, start, end, delay=0.1, market="KR"):
