@@ -138,12 +138,24 @@ function buildFlow(stocks){
 function render(d){
   const large = d.kr_stocks.filter(s=>s.group==="대형주");
   const sobu  = d.kr_stocks.filter(s=>s.group==="소부장");
+  const krHmRows = d.kr_stocks.map(s=>({name:s.name,group:s.group,w:{[d.week]:s.ret_1w}}));
   document.getElementById("updated-at").textContent="업데이트: "+d.updated;
   document.getElementById("app").innerHTML=`
     ${buildMetrics(d)}
     <div class="section">
       <div class="section-header"><span class="section-title">🇺🇸 미국 종목</span><span class="badge">당일 · 1주 · 1개월</span></div>
       <div class="heatmap-wrap">${buildUsHeatmap(d.us_stocks, d.week)}</div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">🇰🇷 대형주 + 소부장 — 주간 수익률 히트맵</span><span class="badge">${d.week} 기준</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="swatch" style="background:#1a7f37"></div>+3%↑</div>
+        <div class="legend-item"><div class="swatch" style="background:#2ea043"></div>+1~3%</div>
+        <div class="legend-item"><div class="swatch" style="background:#2d3e2d"></div>0~1%</div>
+        <div class="legend-item"><div class="swatch" style="background:#3e2d2d"></div>-1~0%</div>
+        <div class="legend-item"><div class="swatch" style="background:#b91c1c"></div>-3%↓</div>
+      </div>
+      <div class="heatmap-wrap">${buildHeatmap(krHmRows,[d.week],true)}</div>
     </div>
     <div class="section">
       <div class="section-header"><span class="section-title">📊 외국인/기관 수급 — 대형주</span><span class="badge">전일 마감 · 억원</span></div>
@@ -165,4 +177,3 @@ fetch("data.json?t="+Date.now())
 </script>
 </body>
 </html>
-
