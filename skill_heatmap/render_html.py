@@ -1,6 +1,6 @@
 """
 집계 결과 → deepflow 스타일 히트맵 HTML
-KR + US 위아래 배치 / 스킬 툴팁 / 인사이트 / 종목 클릭 팝업
+2025/2026 탭 구분 / 종목명 팝업 / 툴팁 / 인사이트
 """
 
 from pathlib import Path
@@ -45,16 +45,18 @@ def _color(v):
     return "#5c0000", "#ffacac"
 
 
-def _cell_html(data, skill, week):
+def _cell_html(data, skill, week, tab_id):
     if not data:
         return "<td></td>"
-    v        = data["mean"]
-    n        = data["n"]
-    wr       = data["win_rate"]
-    tickers  = data.get("tickers", "")
-    sign     = "+" if v >= 0 else ""
-    bg, fg   = _color(v)
-    onclick  = f"showTickers('{skill}','{week}',`{tickers}`)"
+    v       = data["mean"]
+    n       = data["n"]
+    wr      = data["win_rate"]
+    tickers = data.get("tickers", "")
+    sign    = "+" if v >= 0 else ""
+    bg, fg  = _color(v)
+    # 종목 문자열에서 괄호 이스케이프
+    tickers_escaped = tickers.replace("'", "\\'")
+    onclick = f"showTickers('{skill}','{week}','{tickers_escaped}')"
     return (
         f'<td><span class="cell" style="background:{bg};color:{fg};cursor:pointer" onclick="{onclick}">'
         f'<span class="ret">{sign}{v:.1f}</span>'
@@ -63,13 +65,16 @@ def _cell_html(data, skill, week):
     )
 
 
-def _build_table(heatmap_data, benchmark, hold_weeks, flag, market_label, bm_label):
+def _build_table(heatmap_data, benchmark, hold_weeks, bm_label, tab_id):
     used_weeks = set()
     for sk_data in heatmap_data.values():
         used_weeks.update(sk_data.keys())
     week_cols = sorted(w for w in WEEKS if w in used_weeks)
 
-    thead = f'<th class="skill-col">{flag} {market_label}</th>'
+    if not week_cols:
+        return "<p style='color:#666;font-size:11px;padding:12px'>해당 연도 데이터 없음</p>"
+
+    thead = '<th class="skill-col">스킬 \\ 주</th>'
     for w in week_cols:
         hold  = w in hold_weeks
         badge = '<span class="hold-badge">HOLD</span>' if hold else ""
@@ -99,7 +104,7 @@ def _build_table(heatmap_data, benchmark, hold_weeks, flag, market_label, bm_lab
             f'<span class="tip-icon">?</span></span></td>'
         )
         for w in week_cols:
-            cells += _cell_html(data.get(w), sk, w)
+            cells += _cell_html(data.get(w), sk, w, tab_id)
         rows += f"<tr>{cells}</tr>\n"
 
     return f"""<div class="table-wrap">
@@ -126,33 +131,31 @@ def _build_insights(insights):
         st = type_style.get(ins["type"], type_style["neutral"])
         items += f'<li style="padding:8px 12px;margin:6px 0;border-radius:4px;{st}">{ins["icon"]} {ins["text"]}</li>\n'
     return f"""<div class="insight-box">
-  <h2>📋 주간 인사이트</h2>
+  <h2>📋 주간 인사이트 (2025)</h2>
   <ul style="list-style:none;padding:0;margin:0;">{items}</ul>
 </div>"""
 
 
 def render(
-    heatmap_kr,
-    output_path  = "docs/heatmap.html",
-    benchmark_kr = None,
-    heatmap_us   = None,
-    benchmark_us = None,
-    insights     = None,
+    heatmap_kr_25,
+    heatmap_kr_26,
+    output_path   = "docs/heatmap.html",
+    benchmark_kr  = None,
+    heatmap_us_25 = None,
+    heatmap_us_26 = None,
+    insights      = None,
 ):
     generated = date.today().strftime("%Y-%m-%d")
 
-    kr_table = _build_table(
-        heatmap_kr, benchmark_kr, HOLD_WEEKS,
-        "KR", "주간 수익률 매트릭스", "📋 코스피 최악일낙폭"
-    )
+    kr25 = _build_table(heatmap_kr_25, benchmark_kr, HOLD_WEEKS, "📋 코스피 최악일낙폭", "kr25")
+    kr26 = _build_table(heatmap_kr_26, {}, set(), "📋 코스피 최악일낙폭", "kr26")
 
-    us_section = ""
-    if heatmap_us:
-        us_table = _build_table(
-            heatmap_us, benchmark_us, set(),
-            "US", "주간 수익률 매트릭스", "📋 S&P500 최악일낙폭"
-        )
-        us_section = f"<h1>🇺🇸 US — 주간 수익률 매트릭스</h1>\n{us_table}"
+    us25_html = ""
+    us26_html = ""
+    if heatmap_us_25:
+        us25_html = _build_table(heatmap_us_25, {}, set(), "📋 S&P500 최악일낙폭", "us25")
+    if heatmap_us_26:
+        us26_html = _build_table(heatmap_us_26, {}, set(), "📋 S&P500 최악일낙폭", "us26")
 
     insight_html = _build_insights(insights or [])
 
@@ -165,11 +168,22 @@ def render(
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ background: #0e1117; color: #e0e0e0; font-family: 'Pretendard', sans-serif; font-size: 12px; padding: 20px; }}
-  h1 {{ font-size: 15px; font-weight: 500; margin-bottom: 6px; margin-top: 28px; }}
+  h1 {{ font-size: 15px; font-weight: 500; margin-bottom: 10px; margin-top: 28px; }}
   h1:first-of-type {{ margin-top: 0; }}
   h2 {{ font-size: 13px; font-weight: 500; margin-bottom: 10px; color: #ccc; }}
   .sub {{ font-size: 10px; color: #888; margin-bottom: 16px; line-height: 1.7; }}
   .sub b {{ color: #e85555; }}
+
+  /* 탭 */
+  .tabs {{ display: flex; gap: 6px; margin-bottom: 12px; }}
+  .tab-btn {{
+    padding: 5px 16px; border-radius: 4px; border: 1px solid #333;
+    background: #1a1f2e; color: #888; font-size: 11px; cursor: pointer;
+  }}
+  .tab-btn.active {{ background: #2a9a55; color: #fff; border-color: #2a9a55; }}
+  .tab-content {{ display: none; }}
+  .tab-content.active {{ display: block; }}
+
   .table-wrap {{ overflow-x: auto; margin-bottom: 32px; }}
   table {{ border-collapse: collapse; width: 100%; }}
   th, td {{ padding: 2px 3px; text-align: center; vertical-align: middle; }}
@@ -194,15 +208,16 @@ def render(
   /* 팝업 */
   .modal-bg {{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; }}
   .modal-bg.active {{ display:flex; align-items:center; justify-content:center; }}
-  .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:320px; max-width:480px; max-height:80vh; overflow-y:auto; }}
+  .modal {{ background:#1a1f2e; border:1px solid #333; border-radius:8px; padding:20px; min-width:340px; max-width:500px; max-height:80vh; overflow-y:auto; }}
   .modal-title {{ font-size:13px; font-weight:500; margin-bottom:12px; color:#ddd; }}
-  .modal-close {{ float:right; cursor:pointer; color:#888; font-size:16px; }}
-  .ticker-item {{ display:flex; justify-content:space-between; padding:6px 8px; margin:3px 0; border-radius:4px; font-size:11px; }}
+  .modal-close {{ float:right; cursor:pointer; color:#888; font-size:16px; line-height:1; }}
+  .ticker-item {{ display:flex; justify-content:space-between; align-items:center; padding:6px 8px; margin:3px 0; border-radius:4px; font-size:11px; }}
   .ticker-item.pos {{ background:#0d2e1a; color:#a8f0c6; }}
   .ticker-item.neg {{ background:#2e0d0d; color:#ffacac; }}
   .ticker-name {{ font-weight:500; }}
-  .ticker-ret {{ font-size:11px; }}
-  .ticker-date {{ font-size:10px; color:#888; margin-left:8px; }}
+  .ticker-right {{ display:flex; align-items:center; gap:8px; }}
+  .ticker-ret {{ font-size:11px; font-weight:500; }}
+  .ticker-date {{ font-size:10px; opacity:0.7; }}
 </style>
 </head>
 <body>
@@ -211,48 +226,69 @@ def render(
   지표: 5일 보유 신호 수익률(d5_return)의 주간 평균 · 셀 = 평균 수익률(%), 아래 = 표본수 n·승률<br>
   <b>🚩</b> 맨 왼쪽 시장 최악 일일 낙폭이 <b>-4%</b> 이하인 주는
   <span style="background:#e85555;color:#fff;padding:0 3px;border-radius:3px;font-size:9px;">HOLD</span> (현금 권장)
-  · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 에 마우스를 올리면 설명 · 셀 클릭 시 해당 종목 리스트
+  · 스킬명 옆 <span style="background:#444;color:#aaa;padding:0 4px;border-radius:50%;font-size:9px;">?</span> 마우스 올리면 설명 · 셀 클릭 시 종목 리스트
 </div>
 
 <h1>🇰🇷 KR — 주간 수익률 매트릭스</h1>
-{kr_table}
-{us_section}
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('kr','2025',this)">2025년</button>
+  <button class="tab-btn" onclick="switchTab('kr','2026',this)">2026년</button>
+</div>
+<div id="kr-2025" class="tab-content active">{kr25}</div>
+<div id="kr-2026" class="tab-content">{kr26}</div>
+
+<h1>🇺🇸 US — 주간 수익률 매트릭스</h1>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('us','2025',this)">2025년</button>
+  <button class="tab-btn" onclick="switchTab('us','2026',this)">2026년</button>
+</div>
+<div id="us-2025" class="tab-content active">{us25_html}</div>
+<div id="us-2026" class="tab-content">{us26_html}</div>
+
 {insight_html}
-<p class="generated">생성일: {generated} · KIS OpenAPI 기반 자동 계산</p>
+<p class="generated">생성일: {generated} · FinanceDataReader 기반 자동 계산</p>
 
 <!-- 종목 팝업 -->
 <div class="modal-bg" id="modalBg" onclick="closeModal(event)">
   <div class="modal" id="modal">
-    <div class="modal-title" id="modalTitle">
-      <span class="modal-close" onclick="document.getElementById('modalBg').classList.remove('active')">✕</span>
-    </div>
+    <div class="modal-title" id="modalTitle"></div>
     <div id="modalBody"></div>
   </div>
 </div>
 
 <script>
+function switchTab(market, year, btn) {{
+  // 같은 market의 탭 버튼 전부 비활성화
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // 콘텐츠 전환
+  document.getElementById(market+'-2025').classList.remove('active');
+  document.getElementById(market+'-2026').classList.remove('active');
+  document.getElementById(market+'-'+year).classList.add('active');
+}}
+
 function showTickers(skill, week, raw) {{
   const items = raw.split('|').filter(Boolean);
   document.getElementById('modalTitle').innerHTML =
     '<span class="modal-close" onclick="document.getElementById(\\'modalBg\\').classList.remove(\\'active\\')">✕</span>' +
-    skill + ' · ' + week + ' (' + items.length + '개 종목)';
+    '<b>' + skill + '</b> · ' + week + ' <span style="color:#888;font-size:10px;">(' + items.length + '개 종목)</span>';
 
   let html = '';
   items.forEach(item => {{
-    // 형식: TICKER(+1.2%,03/15)
+    // 형식: 삼성전자(005930)(+15.2%,12/22)
     const m = item.match(/^(.+?)\\(([+-]?[\\d.]+)%,([\\d/]+)\\)$/);
     if (!m) return;
-    const [, ticker, ret, dt] = m;
+    const [, name, ret, dt] = m;
     const pos = parseFloat(ret) >= 0;
     html += `<div class="ticker-item ${{pos?'pos':'neg'}}">
-      <span class="ticker-name">${{ticker}}</span>
-      <span>
+      <span class="ticker-name">${{name}}</span>
+      <span class="ticker-right">
         <span class="ticker-ret">${{pos?'+':''}}${{ret}}%</span>
         <span class="ticker-date">${{dt}}</span>
       </span>
     </div>`;
   }});
-  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBody').innerHTML = html || '<p style="color:#666;font-size:11px;">데이터 없음</p>';
   document.getElementById('modalBg').classList.add('active');
 }}
 
