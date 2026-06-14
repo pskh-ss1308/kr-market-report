@@ -1,5 +1,6 @@
 """
 신호 발생 후 5일 수익률 계산 및 주별 집계
+종목명 함께 저장
 """
 
 import pandas as pd
@@ -31,6 +32,7 @@ def run_skill_heatmap(ohlcv_dict, year=None):
     if year is None:
         year = datetime.date.today().year
 
+    # {skill: {week: [{ticker, ret, date}]}}
     results = {sk: {} for sk in SKILL_REGISTRY}
 
     for ticker, raw_df in ohlcv_dict.items():
@@ -52,18 +54,31 @@ def run_skill_heatmap(ohlcv_dict, year=None):
                 if ret is None:
                     continue
                 week = get_week_label(sig_date)
-                results[skill_name].setdefault(week, []).append(ret)
+                results[skill_name].setdefault(week, []).append({
+                    "ticker": ticker,
+                    "ret":    round(ret, 2),
+                    "date":   sig_date.strftime("%m/%d"),
+                })
 
     rows = []
     for skill, week_data in results.items():
-        for week, rets in week_data.items():
+        for week, items in week_data.items():
+            rets     = [i["ret"] for i in items]
             n        = len(rets)
             mean_ret = float(np.mean(rets))
             win_rate = float(np.mean([r > 0 for r in rets]) * 100)
-            rows.append({"skill": skill, "week": week, "mean": mean_ret, "n": n, "win_rate": win_rate})
+            tickers  = [f"{i['ticker']}({i['ret']:+.1f}%,{i['date']})" for i in items]
+            rows.append({
+                "skill":    skill,
+                "week":     week,
+                "mean":     mean_ret,
+                "n":        n,
+                "win_rate": win_rate,
+                "tickers":  "|".join(tickers),
+            })
 
     if not rows:
-        return pd.DataFrame(columns=["skill","week","mean","n","win_rate"])
+        return pd.DataFrame(columns=["skill","week","mean","n","win_rate","tickers"])
 
     return pd.DataFrame(rows)
 
@@ -77,5 +92,6 @@ def pivot_for_heatmap(df):
             "mean":     round(row["mean"], 1),
             "n":        int(row["n"]),
             "win_rate": round(row["win_rate"]),
+            "tickers":  row["tickers"],
         }
     return out
