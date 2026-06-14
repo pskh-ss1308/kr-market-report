@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>트레이딩 스킬 주간 수익률 히트맵</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e1117; color: #e0e0e0; font-family: 'Pretendard', sans-serif; font-size: 12px; padding: 20px; }
+  h1 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+  .sub { font-size: 10px; color: #888; margin-bottom: 16px; line-height: 1.7; }
+  .sub b { color: #e85555; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 2px 3px; text-align: center; vertical-align: middle; }
+  .skill-col { text-align: left; min-width: 130px; padding-left: 6px; color: #ccc; font-size: 11px; }
+  .wh { font-size: 10px; color: #888; min-width: 56px; }
+  .hold-week { color: #e85555; font-weight: 500; }
+  .hold-badge { font-size: 8px; background: #e85555; color: #fff; border-radius: 3px; padding: 0 3px; display: block; margin: 0 auto 2px; width: fit-content; }
+  .bm-label { font-size: 10px; color: #666; }
+  .bm-pos { color: #4caf7d; font-size: 10px; }
+  .bm-neg { color: #e85555; font-size: 10px; }
+  .cell { border-radius: 4px; padding: 3px 4px; display: inline-block; width: 100%; min-width: 50px; }
+  .ret { font-weight: 500; font-size: 11px; display: block; }
+  .meta { font-size: 9px; opacity: 0.85; display: block; line-height: 1.2; }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  .generated { font-size: 10px; color: #555; margin-top: 12px; }
+</style>
+</head>
+<body>
+<h1>🇰🇷 KR — 주간 수익률 매트릭스</h1>
+<div class="sub">
+  지표: 5일 보유 신호 수익률(d5_return)의 주간 평균 · 셀 = 평균 수익률(%), 아래 = 표본수 n·승률<br>
+  <b>🚩</b> 맨 왼쪽 시장 최악 일일 낙폭이 <b>-4%</b> 이하인 주는
+  <span style="background:#e85555;color:#fff;padding:0 3px;border-radius:3px;font-size:9px;">HOLD</span> (현금 권장)
+</div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th class="skill-col">스킬 \ 주</th></tr></thead>
+  <tbody>
+    <tr><td class="skill-col bm-label">📋 코스피 최악일낙폭</td></tr>
+    <tr><td class="skill-col">vcp</td></tr>
+<tr><td class="skill-col">sector_rotation</td></tr>
+<tr><td class="skill-col">flow_momentum</td></tr>
+<tr><td class="skill-col">pre_surge</td></tr>
+<tr><td class="skill-col">contrarian_reversal</td></tr>
+<tr><td class="skill-col">narrative_momentum</td></tr>
+<tr><td class="skill-col">value_chain</td></tr>
+<tr><td class="skill-col">best_of_best</td></tr>
+
+  </tbody>
+</table>
+</div>
+<p class="generated">생성일: 2026-06-14 · KIS OpenAPI 기반 자동 계산</p>
+</body>
+</html>
