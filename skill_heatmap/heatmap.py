@@ -28,17 +28,22 @@ def get_week_label(date):
     return f"W{date.isocalendar().week:02d}"
 
 
-def run_skill_heatmap(ohlcv_dict, year=None):
+def run_skill_heatmap(ohlcv_dict, year=None, name_map=None):
     if year is None:
         year = datetime.date.today().year
+    if name_map is None:
+        name_map = {}
 
-    # {skill: {week: [{ticker, ret, date}]}}
     results = {sk: {} for sk in SKILL_REGISTRY}
 
     for ticker, raw_df in ohlcv_dict.items():
         if raw_df.empty or len(raw_df) < 60:
             continue
         df = add_all(raw_df)
+
+        # 종목명 결정
+        name = name_map.get(str(ticker), ticker)
+        display = f"{name}({ticker})" if name != ticker else ticker
 
         for skill_name, skill_fn in SKILL_REGISTRY.items():
             try:
@@ -55,9 +60,9 @@ def run_skill_heatmap(ohlcv_dict, year=None):
                     continue
                 week = get_week_label(sig_date)
                 results[skill_name].setdefault(week, []).append({
-                    "ticker": ticker,
-                    "ret":    round(ret, 2),
-                    "date":   sig_date.strftime("%m/%d"),
+                    "ticker":  display,
+                    "ret":     round(ret, 2),
+                    "date":    sig_date.strftime("%m/%d"),
                 })
 
     rows = []
