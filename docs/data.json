@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-20 07:06 KST",
+  "updated": "2026-06-21 07:11 KST",
   "week": "W25",
   "sox": {
     "close": 13477.07,
@@ -65,8 +65,8 @@
       "group": "대형주",
       "ret_1w": 9.8,
       "ret_1m": 28.5,
-      "frgn": -8740.0,
-      "inst": -4886.4,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -74,8 +74,8 @@
       "group": "대형주",
       "ret_1w": 28.6,
       "ret_1m": 58.4,
-      "frgn": -8785.3,
-      "inst": 7164.0,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -83,8 +83,8 @@
       "group": "대형주",
       "ret_1w": 1.0,
       "ret_1m": 1.9,
-      "frgn": 1211.7,
-      "inst": -866.8,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -92,8 +92,8 @@
       "group": "대형주",
       "ret_1w": -2.0,
       "ret_1m": -3.6,
-      "frgn": 101.5,
-      "inst": -83.2,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -101,17 +101,17 @@
       "group": "대형주",
       "ret_1w": -7.1,
       "ret_1m": 15.9,
-      "frgn": 593.1,
-      "inst": 217.1,
-      "both": true
+      "frgn": 0,
+      "inst": 0,
+      "both": false
     },
     {
       "name": "한미반도체",
       "group": "소부장",
       "ret_1w": -18.3,
       "ret_1m": 2.4,
-      "frgn": 2760.8,
-      "inst": -7337.5,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -119,17 +119,17 @@
       "group": "소부장",
       "ret_1w": -14.9,
       "ret_1m": 38.1,
-      "frgn": 11.6,
-      "inst": 2.0,
-      "both": true
+      "frgn": 0,
+      "inst": 0,
+      "both": false
     },
     {
       "name": "주성엔지니어링",
       "group": "소부장",
       "ret_1w": -16.4,
       "ret_1m": 9.2,
-      "frgn": 187.0,
-      "inst": -291.5,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -137,8 +137,8 @@
       "group": "소부장",
       "ret_1w": -2.9,
       "ret_1m": 59.3,
-      "frgn": 1.8,
-      "inst": -25.4,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -146,8 +146,8 @@
       "group": "소부장",
       "ret_1w": -26.1,
       "ret_1m": -3.4,
-      "frgn": 29.4,
-      "inst": -59.3,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -155,8 +155,8 @@
       "group": "소부장",
       "ret_1w": -11.4,
       "ret_1m": -3.6,
-      "frgn": 132.7,
-      "inst": -101.3,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -164,8 +164,8 @@
       "group": "소부장",
       "ret_1w": -14.5,
       "ret_1m": 45.9,
-      "frgn": 60.8,
-      "inst": -49.1,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -173,8 +173,8 @@
       "group": "소부장",
       "ret_1w": 0.1,
       "ret_1m": 3.0,
-      "frgn": 59.1,
-      "inst": -123.7,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     }
   ]
