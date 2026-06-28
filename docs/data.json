@@ -1,6 +1,6 @@
 {
-  "updated": "2026-06-28 07:05 KST",
-  "week": "W26",
+  "updated": "2026-06-29 07:03 KST",
+  "week": "W27",
   "sox": {
     "close": 13203.57,
     "change_pct": -5.29,
@@ -14,7 +14,7 @@
       "close": 29368.25,
       "change_pct": -1.2,
       "ret_1w": -3.0,
-      "ret_1m": -2.3
+      "ret_1m": -3.1
     },
     "KORU": {
       "name": "KORU ETF",
@@ -32,9 +32,9 @@
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1535.0,
-      "change_pct": -0.5,
-      "ret_1w": -0.2,
+      "close": 1535.11,
+      "change_pct": -0.74,
+      "ret_1w": 0.2,
       "ret_1m": 1.3
     }
   },
@@ -65,8 +65,8 @@
       "group": "대형주",
       "ret_1w": -4.1,
       "ret_1m": 13.5,
-      "frgn": -20287.5,
-      "inst": -12201.3,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -74,8 +74,8 @@
       "group": "대형주",
       "ret_1w": -3.3,
       "ret_1m": 30.3,
-      "frgn": -22666.2,
-      "inst": -28472.2,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -83,8 +83,8 @@
       "group": "대형주",
       "ret_1w": -21.6,
       "ret_1m": -30.0,
-      "frgn": -154.5,
-      "inst": 336.3,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -92,8 +92,8 @@
       "group": "대형주",
       "ret_1w": -19.8,
       "ret_1m": -22.8,
-      "frgn": 95.6,
-      "inst": -97.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -101,8 +101,8 @@
       "group": "대형주",
       "ret_1w": -14.4,
       "ret_1m": -1.8,
-      "frgn": -38.3,
-      "inst": 186.0,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -110,8 +110,8 @@
       "group": "소부장",
       "ret_1w": -12.7,
       "ret_1m": -21.7,
-      "frgn": -211.6,
-      "inst": 180.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -119,8 +119,8 @@
       "group": "소부장",
       "ret_1w": 5.0,
       "ret_1m": 34.3,
-      "frgn": -300.2,
-      "inst": 472.8,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -128,17 +128,17 @@
       "group": "소부장",
       "ret_1w": -14.2,
       "ret_1m": -29.4,
-      "frgn": 294.5,
-      "inst": 161.0,
-      "both": true
+      "frgn": 0.0,
+      "inst": 0.0,
+      "both": false
     },
     {
       "name": "피에스케이",
       "group": "소부장",
       "ret_1w": 14.1,
       "ret_1m": 63.9,
-      "frgn": -216.1,
-      "inst": 396.8,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -146,8 +146,8 @@
       "group": "소부장",
       "ret_1w": 20.4,
       "ret_1m": 2.7,
-      "frgn": -10.3,
-      "inst": 125.4,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -155,8 +155,8 @@
       "group": "소부장",
       "ret_1w": -9.0,
       "ret_1m": -23.9,
-      "frgn": -3.7,
-      "inst": 149.4,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -164,8 +164,8 @@
       "group": "소부장",
       "ret_1w": 3.0,
       "ret_1m": 24.4,
-      "frgn": -139.7,
-      "inst": 189.4,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -173,9 +173,9 @@
       "group": "소부장",
       "ret_1w": -0.8,
       "ret_1m": -5.4,
-      "frgn": 3.9,
-      "inst": 111.7,
-      "both": true
+      "frgn": 0.0,
+      "inst": 0.0,
+      "both": false
     }
   ]
 }
