@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-04 07:06 KST",
+  "updated": "2026-07-05 07:00 KST",
   "week": "W27",
   "sox": {
     "close": 12626.22,
@@ -65,8 +65,8 @@
       "group": "대형주",
       "ret_1w": -8.8,
       "ret_1m": -11.9,
-      "frgn": -4226.5,
-      "inst": 13524.1,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -74,8 +74,8 @@
       "group": "대형주",
       "ret_1w": -9.3,
       "ret_1m": 5.5,
-      "frgn": -18075.4,
-      "inst": 25993.0,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -83,17 +83,17 @@
       "group": "대형주",
       "ret_1w": 2.4,
       "ret_1m": -29.7,
-      "frgn": 375.2,
-      "inst": 257.6,
-      "both": true
+      "frgn": 0,
+      "inst": 0,
+      "both": false
     },
     {
       "name": "LG화학",
       "group": "대형주",
       "ret_1w": 3.9,
       "ret_1m": -20.0,
-      "frgn": -3.5,
-      "inst": -1.7,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -101,8 +101,8 @@
       "group": "대형주",
       "ret_1w": -0.3,
       "ret_1m": -26.8,
-      "frgn": -107.2,
-      "inst": -193.4,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -110,17 +110,17 @@
       "group": "소부장",
       "ret_1w": -9.7,
       "ret_1m": -23.5,
-      "frgn": 230.3,
-      "inst": 25.8,
-      "both": true
+      "frgn": 0,
+      "inst": 0,
+      "both": false
     },
     {
       "name": "원익IPS",
       "group": "소부장",
       "ret_1w": -18.7,
       "ret_1m": 4.6,
-      "frgn": -48.6,
-      "inst": -40.5,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -128,8 +128,8 @@
       "group": "소부장",
       "ret_1w": 16.3,
       "ret_1m": -23.1,
-      "frgn": -1255.6,
-      "inst": -176.4,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -137,8 +137,8 @@
       "group": "소부장",
       "ret_1w": -3.1,
       "ret_1m": 59.4,
-      "frgn": 76.3,
-      "inst": -101.3,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -146,17 +146,17 @@
       "group": "소부장",
       "ret_1w": 6.3,
       "ret_1m": 15.8,
-      "frgn": 3.0,
-      "inst": 4.9,
-      "both": true
+      "frgn": 0,
+      "inst": 0,
+      "both": false
     },
     {
       "name": "리노공업",
       "group": "소부장",
       "ret_1w": -6.8,
       "ret_1m": -21.1,
-      "frgn": 134.5,
-      "inst": -63.9,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -164,8 +164,8 @@
       "group": "소부장",
       "ret_1w": -0.6,
       "ret_1m": 10.2,
-      "frgn": 102.4,
-      "inst": -88.0,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     },
     {
@@ -173,8 +173,8 @@
       "group": "소부장",
       "ret_1w": -15.5,
       "ret_1m": -9.6,
-      "frgn": -33.1,
-      "inst": -38.2,
+      "frgn": 0,
+      "inst": 0,
       "both": false
     }
   ]
