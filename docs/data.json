@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-11 07:06 KST",
+  "updated": "2026-07-12 06:52 KST",
   "week": "W28",
   "sox": {
     "close": 12967.16,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 30068.5,
-      "change_pct": 0.44,
-      "ret_1w": 1.7,
-      "ret_1m": 5.3
+      "close": 30032.25,
+      "change_pct": 0.32,
+      "ret_1w": 1.6,
+      "ret_1m": 1.9
     },
     "KORU": {
       "name": "KORU ETF",
@@ -126,8 +126,8 @@
     {
       "name": "주성엔지니어링",
       "group": "소부장",
-      "ret_1w": 7.6,
-      "ret_1m": 7.6,
+      "ret_1w": -0.4,
+      "ret_1m": -3.6,
       "frgn": 122.3,
       "inst": -0.5,
       "both": false
@@ -144,8 +144,8 @@
     {
       "name": "피에스케이홀딩스",
       "group": "소부장",
-      "ret_1w": 18.2,
-      "ret_1m": 18.2,
+      "ret_1w": -5.4,
+      "ret_1m": -1.8,
       "frgn": -98.9,
       "inst": 124.4,
       "both": false
@@ -153,8 +153,8 @@
     {
       "name": "리노공업",
       "group": "소부장",
-      "ret_1w": 5.4,
-      "ret_1m": 5.4,
+      "ret_1w": -6.1,
+      "ret_1m": -20.6,
       "frgn": 126.5,
       "inst": -61.2,
       "both": false
@@ -162,8 +162,8 @@
     {
       "name": "유진테크",
       "group": "소부장",
-      "ret_1w": 12.7,
-      "ret_1m": 12.7,
+      "ret_1w": -3.4,
+      "ret_1m": 7.0,
       "frgn": -53.3,
       "inst": 62.8,
       "both": false
@@ -171,8 +171,8 @@
     {
       "name": "하나마이크론",
       "group": "소부장",
-      "ret_1w": 12.9,
-      "ret_1m": 12.9,
+      "ret_1w": -3.2,
+      "ret_1m": -6.1,
       "frgn": -45.2,
       "inst": 60.4,
       "both": false
