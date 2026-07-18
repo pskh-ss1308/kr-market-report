@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-18 06:55 KST",
+  "updated": "2026-07-19 06:53 KST",
   "week": "W29",
   "sox": {
     "close": 11673.89,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 28768.25,
-      "change_pct": -1.57,
+      "close": 28773.25,
+      "change_pct": -1.55,
       "ret_1w": -4.2,
-      "ret_1m": -3.1
+      "ret_1m": -4.9
     },
     "KORU": {
       "name": "KORU ETF",
@@ -55,7 +55,7 @@
       "change_pct": -1.06,
       "ret_1w": 0.8,
       "ret_1m": 1.2,
-      "volume_ratio": 1.0,
+      "volume_ratio": 1.1,
       "near_52w_high": false
     }
   ],
