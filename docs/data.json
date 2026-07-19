@@ -1,6 +1,6 @@
 {
-  "updated": "2026-07-19 06:53 KST",
-  "week": "W29",
+  "updated": "2026-07-20 06:55 KST",
+  "week": "W30",
   "sox": {
     "close": 11673.89,
     "change_pct": -1.63,
@@ -14,7 +14,7 @@
       "close": 28773.25,
       "change_pct": -1.55,
       "ret_1w": -4.2,
-      "ret_1m": -4.9
+      "ret_1m": -6.1
     },
     "KORU": {
       "name": "KORU ETF",
@@ -32,9 +32,9 @@
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1487.46,
-      "change_pct": 0.08,
-      "ret_1w": -1.2,
+      "close": 1486.53,
+      "change_pct": 0.52,
+      "ret_1w": -0.8,
       "ret_1m": -1.6
     }
   },
@@ -65,8 +65,8 @@
       "group": "대형주",
       "ret_1w": -8.3,
       "ret_1m": -25.7,
-      "frgn": -2106.5,
-      "inst": -11648.0,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -74,8 +74,8 @@
       "group": "대형주",
       "ret_1w": -15.7,
       "ret_1m": -22.7,
-      "frgn": -8650.7,
-      "inst": -11582.2,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -83,8 +83,8 @@
       "group": "대형주",
       "ret_1w": -4.6,
       "ret_1m": -33.6,
-      "frgn": 435.0,
-      "inst": -267.6,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -92,8 +92,8 @@
       "group": "대형주",
       "ret_1w": 3.6,
       "ret_1m": -29.1,
-      "frgn": -26.4,
-      "inst": 13.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -101,8 +101,8 @@
       "group": "대형주",
       "ret_1w": 3.0,
       "ret_1m": -21.5,
-      "frgn": 311.5,
-      "inst": -151.8,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -110,8 +110,8 @@
       "group": "소부장",
       "ret_1w": 12.5,
       "ret_1m": -26.2,
-      "frgn": -362.0,
-      "inst": -132.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -119,8 +119,8 @@
       "group": "소부장",
       "ret_1w": 34.1,
       "ret_1m": -9.9,
-      "frgn": -354.3,
-      "inst": 293.6,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -128,8 +128,8 @@
       "group": "소부장",
       "ret_1w": 5.3,
       "ret_1m": -17.0,
-      "frgn": -423.6,
-      "inst": -49.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -137,8 +137,8 @@
       "group": "소부장",
       "ret_1w": 28.4,
       "ret_1m": 20.5,
-      "frgn": -86.7,
-      "inst": 27.4,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -146,8 +146,8 @@
       "group": "소부장",
       "ret_1w": 24.5,
       "ret_1m": 16.4,
-      "frgn": 68.2,
-      "inst": -147.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -155,8 +155,8 @@
       "group": "소부장",
       "ret_1w": 3.3,
       "ret_1m": -23.7,
-      "frgn": 18.5,
-      "inst": -51.5,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -164,8 +164,8 @@
       "group": "소부장",
       "ret_1w": -0.1,
       "ret_1m": -16.9,
-      "frgn": -22.1,
-      "inst": -5.4,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     },
     {
@@ -173,8 +173,8 @@
       "group": "소부장",
       "ret_1w": 1.6,
       "ret_1m": -28.6,
-      "frgn": 25.6,
-      "inst": -46.8,
+      "frgn": 0.0,
+      "inst": 0.0,
       "both": false
     }
   ]
