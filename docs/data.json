@@ -1,61 +1,61 @@
 {
-  "updated": "2026-07-20 06:55 KST",
+  "updated": "2026-07-21 07:01 KST",
   "week": "W30",
   "sox": {
-    "close": 11673.89,
-    "change_pct": -1.63,
-    "ret_1w": -10.0,
-    "ret_1m": -18.6,
-    "signal": "약세"
+    "close": 11743.85,
+    "change_pct": 0.6,
+    "ret_1w": -4.9,
+    "ret_1m": -19.8,
+    "signal": "보합"
   },
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 28773.25,
-      "change_pct": -1.55,
-      "ret_1w": -4.2,
+      "close": 28777.0,
+      "change_pct": 0.01,
+      "ret_1w": -2.4,
       "ret_1m": -6.1
     },
     "KORU": {
       "name": "KORU ETF",
-      "close": 18.26,
-      "change_pct": -2.09,
-      "ret_1w": -34.4,
-      "ret_1m": -66.5
+      "close": 18.41,
+      "change_pct": 0.82,
+      "ret_1w": -12.2,
+      "ret_1m": -66.2
     },
     "^SOX": {
       "name": "SOX 반도체지수",
-      "close": 11673.89,
-      "change_pct": -1.63,
-      "ret_1w": -10.0,
-      "ret_1m": -18.6
+      "close": 11743.85,
+      "change_pct": 0.6,
+      "ret_1w": -4.9,
+      "ret_1m": -19.8
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1486.53,
-      "change_pct": 0.52,
-      "ret_1w": -0.8,
-      "ret_1m": -1.6
+      "close": 1475.42,
+      "change_pct": -0.8,
+      "ret_1w": -1.5,
+      "ret_1m": -3.7
     }
   },
-  "outlook": "관망 권장",
+  "outlook": "매수 우호적",
   "us_stocks": [
     {
       "ticker": "NVDA",
-      "close": 202.81,
-      "change_pct": -2.21,
-      "ret_1w": -3.9,
-      "ret_1m": -3.7,
-      "volume_ratio": 1.1,
+      "close": 203.28,
+      "change_pct": 0.23,
+      "ret_1w": -0.1,
+      "ret_1m": -2.6,
+      "volume_ratio": 0.7,
       "near_52w_high": false
     },
     {
       "ticker": "AMZN",
-      "close": 247.23,
-      "change_pct": -1.06,
-      "ret_1w": 0.8,
-      "ret_1m": 1.2,
-      "volume_ratio": 1.1,
+      "close": 249.99,
+      "change_pct": 1.12,
+      "ret_1w": 1.1,
+      "ret_1m": 7.4,
+      "volume_ratio": 0.8,
       "near_52w_high": false
     }
   ],
@@ -63,8 +63,8 @@
     {
       "name": "삼성전자",
       "group": "대형주",
-      "ret_1w": -8.3,
-      "ret_1m": -25.7,
+      "ret_1w": -14.4,
+      "ret_1m": -31.0,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -72,8 +72,8 @@
     {
       "name": "SK하이닉스",
       "group": "대형주",
-      "ret_1w": -15.7,
-      "ret_1m": -22.7,
+      "ret_1w": -19.1,
+      "ret_1m": -39.6,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -81,8 +81,8 @@
     {
       "name": "현대차",
       "group": "대형주",
-      "ret_1w": -4.6,
-      "ret_1m": -33.6,
+      "ret_1w": -12.8,
+      "ret_1m": -31.3,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -90,8 +90,8 @@
     {
       "name": "LG화학",
       "group": "대형주",
-      "ret_1w": 3.6,
-      "ret_1m": -29.1,
+      "ret_1w": -4.2,
+      "ret_1m": -21.7,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -99,8 +99,8 @@
     {
       "name": "NAVER",
       "group": "대형주",
-      "ret_1w": 3.0,
-      "ret_1m": -21.5,
+      "ret_1w": -2.8,
+      "ret_1m": -16.3,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -108,8 +108,8 @@
     {
       "name": "한미반도체",
       "group": "소부장",
-      "ret_1w": 12.5,
-      "ret_1m": -26.2,
+      "ret_1w": 0.0,
+      "ret_1m": -26.4,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -117,8 +117,8 @@
     {
       "name": "원익IPS",
       "group": "소부장",
-      "ret_1w": 34.1,
-      "ret_1m": -9.9,
+      "ret_1w": -7.9,
+      "ret_1m": -33.3,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -126,8 +126,8 @@
     {
       "name": "주성엔지니어링",
       "group": "소부장",
-      "ret_1w": 5.3,
-      "ret_1m": -17.0,
+      "ret_1w": -10.6,
+      "ret_1m": -10.6,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -135,8 +135,8 @@
     {
       "name": "피에스케이",
       "group": "소부장",
-      "ret_1w": 28.4,
-      "ret_1m": 20.5,
+      "ret_1w": -9.8,
+      "ret_1m": -5.2,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -144,8 +144,8 @@
     {
       "name": "피에스케이홀딩스",
       "group": "소부장",
-      "ret_1w": 24.5,
-      "ret_1m": 16.4,
+      "ret_1w": -10.6,
+      "ret_1m": -10.6,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -153,8 +153,8 @@
     {
       "name": "리노공업",
       "group": "소부장",
-      "ret_1w": 3.3,
-      "ret_1m": -23.7,
+      "ret_1w": -4.4,
+      "ret_1m": -4.4,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -162,8 +162,8 @@
     {
       "name": "유진테크",
       "group": "소부장",
-      "ret_1w": -0.1,
-      "ret_1m": -16.9,
+      "ret_1w": -12.9,
+      "ret_1m": -12.9,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -171,8 +171,8 @@
     {
       "name": "하나마이크론",
       "group": "소부장",
-      "ret_1w": 1.6,
-      "ret_1m": -28.6,
+      "ret_1w": 2.5,
+      "ret_1m": 2.5,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
