@@ -1,8 +1,8 @@
 {
-  "updated": "2026-07-25 07:06 KST",
+  "updated": "2026-07-26 06:58 KST",
   "week": "W30",
   "sox": {
-    "close": 11818.89,
+    "close": 11818.88,
     "change_pct": -4.25,
     "ret_1w": 1.2,
     "ret_1m": -15.2,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 28306.5,
-      "change_pct": -1.1,
-      "ret_1w": -1.6,
-      "ret_1m": -4.1
+      "close": 28282.25,
+      "change_pct": -1.18,
+      "ret_1w": -1.7,
+      "ret_1m": -4.9
     },
     "KORU": {
       "name": "KORU ETF",
@@ -25,17 +25,17 @@
     },
     "^SOX": {
       "name": "SOX 반도체지수",
-      "close": 11818.89,
+      "close": 11818.88,
       "change_pct": -4.25,
       "ret_1w": 1.2,
       "ret_1m": -15.2
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1459.42,
-      "change_pct": -1.1,
-      "ret_1w": -1.3,
-      "ret_1m": -4.9
+      "close": 1462.1,
+      "change_pct": -0.81,
+      "ret_1w": -1.7,
+      "ret_1m": -4.8
     }
   },
   "outlook": "관망 권장",
