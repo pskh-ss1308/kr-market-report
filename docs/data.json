@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-08 06:40 KST",
+  "updated": "2026-08-09 06:32 KST",
   "week": "W32",
   "sox": {
     "close": 12356.79,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 29839.5,
-      "change_pct": 1.19,
-      "ret_1w": 5.1,
-      "ret_1m": 1.5
+      "close": 29834.75,
+      "change_pct": 1.18,
+      "ret_1w": 5.0,
+      "ret_1m": 1.2
     },
     "KORU": {
       "name": "KORU ETF",
