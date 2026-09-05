@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05 07:51 KST",
+  "updated": "2026-09-06 07:41 KST",
   "week": "W36",
   "sox": {
     "close": 11735.26,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 29523.0,
-      "change_pct": -0.01,
-      "ret_1w": 0.1,
-      "ret_1m": -1.1
+      "close": 29565.25,
+      "change_pct": 0.14,
+      "ret_1w": 0.2,
+      "ret_1m": -0.2
     },
     "KORU": {
       "name": "KORU ETF",
@@ -32,10 +32,10 @@
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1345.99,
-      "change_pct": -0.91,
-      "ret_1w": -2.5,
-      "ret_1m": -5.8
+      "close": 1351.1,
+      "change_pct": -0.32,
+      "ret_1w": -1.9,
+      "ret_1m": -5.4
     }
   },
   "outlook": "매수 우호적",
@@ -55,7 +55,7 @@
       "change_pct": -0.15,
       "ret_1w": -3.0,
       "ret_1m": -5.2,
-      "volume_ratio": 0.9,
+      "volume_ratio": 1.0,
       "near_52w_high": true
     }
   ],
