@@ -1,20 +1,20 @@
 {
-  "updated": "2026-10-09 10:01 KST",
+  "updated": "2026-10-10 09:32 KST",
   "week": "W41",
   "sox": {
-    "close": 12623.71,
-    "change_pct": -3.39,
-    "ret_1w": -1.6,
-    "ret_1m": 5.8,
-    "signal": "약세"
+    "close": 12572.42,
+    "change_pct": -0.41,
+    "ret_1w": -4.3,
+    "ret_1m": 8.3,
+    "signal": "보합"
   },
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 31006.25,
-      "change_pct": -1.26,
-      "ret_1w": 0.8,
-      "ret_1m": 5.0
+      "close": 31123.25,
+      "change_pct": 0.5,
+      "ret_1w": 0.2,
+      "ret_1m": 5.7
     },
     "KORU": {
       "name": "KORU ETF",
@@ -25,20 +25,20 @@
     },
     "^SOX": {
       "name": "SOX 반도체지수",
-      "close": 12623.71,
-      "change_pct": -3.39,
-      "ret_1w": -1.6,
-      "ret_1m": 5.8
+      "close": 12572.42,
+      "change_pct": -0.41,
+      "ret_1w": -4.3,
+      "ret_1m": 8.3
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1345.48,
-      "change_pct": 0.48,
-      "ret_1w": -1.1,
-      "ret_1m": 0.5
+      "close": 1340.02,
+      "change_pct": 0.07,
+      "ret_1w": -1.5,
+      "ret_1m": 0.1
     }
   },
-  "outlook": "관망 권장",
+  "outlook": "중립 — 종목별 판단",
   "us_stocks": [
     {
       "ticker": "NVDA",
@@ -46,7 +46,7 @@
       "change_pct": NaN,
       "ret_1w": NaN,
       "ret_1m": NaN,
-      "volume_ratio": 1.0,
+      "volume_ratio": 0.8,
       "near_52w_high": false
     },
     {
@@ -55,7 +55,7 @@
       "change_pct": NaN,
       "ret_1w": NaN,
       "ret_1m": NaN,
-      "volume_ratio": 1.0,
+      "volume_ratio": 0.9,
       "near_52w_high": false
     }
   ],
