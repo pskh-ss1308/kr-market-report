@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17 08:17 KST",
+  "updated": "2026-10-18 07:55 KST",
   "week": "W42",
   "sox": {
     "close": 11137.29,
@@ -11,10 +11,10 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 29391.25,
+      "close": 29391.5,
       "change_pct": -2.5,
       "ret_1w": -5.5,
-      "ret_1m": 1.5
+      "ret_1m": -0.2
     },
     "KORU": {
       "name": "KORU ETF",
@@ -32,10 +32,10 @@
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1334.2,
-      "change_pct": -0.5,
-      "ret_1w": -0.5,
-      "ret_1m": -2.2
+      "close": 1329.6,
+      "change_pct": -0.85,
+      "ret_1w": -0.8,
+      "ret_1m": -2.5
     }
   },
   "outlook": "관망 권장",
