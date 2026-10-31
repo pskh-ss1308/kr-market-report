@@ -1,20 +1,20 @@
 {
-  "updated": "2026-10-30 09:39 KST",
+  "updated": "2026-10-31 09:31 KST",
   "week": "W44",
   "sox": {
-    "close": 11518.2,
-    "change_pct": -1.42,
-    "ret_1w": 7.3,
-    "ret_1m": -8.8,
+    "close": 10688.8,
+    "change_pct": -7.2,
+    "ret_1w": -0.8,
+    "ret_1m": -15.4,
     "signal": "약세"
   },
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 29050.25,
-      "change_pct": -3.1,
-      "ret_1w": -0.3,
-      "ret_1m": -5.1
+      "close": 28543.0,
+      "change_pct": -3.45,
+      "ret_1w": -2.0,
+      "ret_1m": -7.0
     },
     "KORU": {
       "name": "KORU ETF",
@@ -25,17 +25,17 @@
     },
     "^SOX": {
       "name": "SOX 반도체지수",
-      "close": 11518.2,
-      "change_pct": -1.42,
-      "ret_1w": 7.3,
-      "ret_1m": -8.8
+      "close": 10688.8,
+      "change_pct": -7.2,
+      "ret_1w": -0.8,
+      "ret_1m": -15.4
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1338.48,
-      "change_pct": -0.14,
+      "close": 1337.98,
+      "change_pct": -0.18,
       "ret_1w": 0.9,
-      "ret_1m": -0.9
+      "ret_1m": -1.4
     }
   },
   "outlook": "관망 권장",
@@ -46,7 +46,7 @@
       "change_pct": NaN,
       "ret_1w": NaN,
       "ret_1m": NaN,
-      "volume_ratio": 0.9,
+      "volume_ratio": 1.6,
       "near_52w_high": false
     },
     {
@@ -55,7 +55,7 @@
       "change_pct": NaN,
       "ret_1w": NaN,
       "ret_1m": NaN,
-      "volume_ratio": 1.9,
+      "volume_ratio": 1.8,
       "near_52w_high": false
     }
   ],
@@ -63,8 +63,8 @@
     {
       "name": "삼성전자",
       "group": "대형주",
-      "ret_1w": 4.1,
-      "ret_1m": -16.5,
+      "ret_1w": 4.4,
+      "ret_1m": -16.2,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -72,8 +72,8 @@
     {
       "name": "SK하이닉스",
       "group": "대형주",
-      "ret_1w": 11.8,
-      "ret_1m": -19.6,
+      "ret_1w": 11.0,
+      "ret_1m": -20.2,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -81,8 +81,8 @@
     {
       "name": "현대차",
       "group": "대형주",
-      "ret_1w": -3.0,
-      "ret_1m": -17.0,
+      "ret_1w": -4.6,
+      "ret_1m": -18.3,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -99,26 +99,26 @@
     {
       "name": "NAVER",
       "group": "대형주",
-      "ret_1w": -0.1,
-      "ret_1m": -10.4,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": -0.7,
+      "ret_1m": -11.0,
+      "frgn": 32.6,
+      "inst": -78.3,
       "both": false
     },
     {
       "name": "한미반도체",
       "group": "소부장",
-      "ret_1w": -1.7,
-      "ret_1m": -26.8,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": -4.3,
+      "ret_1m": -28.8,
+      "frgn": -246.8,
+      "inst": 85.9,
       "both": false
     },
     {
       "name": "원익IPS",
       "group": "소부장",
-      "ret_1w": -0.6,
-      "ret_1m": -27.1,
+      "ret_1w": -7.4,
+      "ret_1m": -32.7,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -126,8 +126,8 @@
     {
       "name": "주성엔지니어링",
       "group": "소부장",
-      "ret_1w": -4.8,
-      "ret_1m": -26.4,
+      "ret_1w": -8.3,
+      "ret_1m": -29.0,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -135,26 +135,26 @@
     {
       "name": "피에스케이",
       "group": "소부장",
-      "ret_1w": 2.6,
-      "ret_1m": -19.0,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": -2.5,
+      "ret_1m": -22.8,
+      "frgn": 28.4,
+      "inst": -6.1,
       "both": false
     },
     {
       "name": "피에스케이홀딩스",
       "group": "소부장",
-      "ret_1w": 7.4,
-      "ret_1m": 4.2,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": 7.2,
+      "ret_1m": 4.0,
+      "frgn": -26.2,
+      "inst": -6.5,
       "both": false
     },
     {
       "name": "리노공업",
       "group": "소부장",
-      "ret_1w": -7.6,
-      "ret_1m": -22.5,
+      "ret_1w": -8.9,
+      "ret_1m": -23.6,
       "frgn": 0.0,
       "inst": 0.0,
       "both": false
@@ -162,19 +162,19 @@
     {
       "name": "유진테크",
       "group": "소부장",
-      "ret_1w": -1.5,
-      "ret_1m": -36.8,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": -3.4,
+      "ret_1m": -38.1,
+      "frgn": 69.0,
+      "inst": -70.6,
       "both": false
     },
     {
       "name": "하나마이크론",
       "group": "소부장",
-      "ret_1w": -4.3,
-      "ret_1m": -27.6,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "ret_1w": -6.8,
+      "ret_1m": -29.5,
+      "frgn": -17.6,
+      "inst": -54.7,
       "both": false
     }
   ]
