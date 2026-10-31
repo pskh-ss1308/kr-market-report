@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-31 09:31 KST",
+  "updated": "2026-11-01 08:58 KST",
   "week": "W44",
   "sox": {
     "close": 10688.8,
@@ -11,17 +11,17 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 28543.0,
-      "change_pct": -3.45,
+      "close": 28534.0,
+      "change_pct": -3.48,
       "ret_1w": -2.0,
-      "ret_1m": -7.0
+      "ret_1m": -7.1
     },
     "KORU": {
       "name": "KORU ETF",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN
+      "close": 10.63,
+      "change_pct": -16.5,
+      "ret_1w": 0.5,
+      "ret_1m": -46.9
     },
     "^SOX": {
       "name": "SOX 반도체지수",
@@ -32,29 +32,29 @@
     },
     "KRW=X": {
       "name": "달러/원 환율",
-      "close": 1337.98,
-      "change_pct": -0.18,
-      "ret_1w": 0.9,
-      "ret_1m": -1.4
+      "close": 1335.1,
+      "change_pct": -0.22,
+      "ret_1w": 1.0,
+      "ret_1m": -1.6
     }
   },
   "outlook": "관망 권장",
   "us_stocks": [
     {
       "ticker": "NVDA",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN,
+      "close": 204.64,
+      "change_pct": -4.22,
+      "ret_1w": -3.0,
+      "ret_1m": -10.4,
       "volume_ratio": 1.6,
       "near_52w_high": false
     },
     {
       "ticker": "AMZN",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN,
+      "close": 240.35,
+      "change_pct": -1.41,
+      "ret_1w": -3.1,
+      "ret_1m": -3.5,
       "volume_ratio": 1.8,
       "near_52w_high": false
     }
@@ -65,8 +65,8 @@
       "group": "대형주",
       "ret_1w": 4.4,
       "ret_1m": -16.2,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -2365.6,
+      "inst": 3842.7,
       "both": false
     },
     {
@@ -74,8 +74,8 @@
       "group": "대형주",
       "ret_1w": 11.0,
       "ret_1m": -20.2,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -4177.9,
+      "inst": -1830.1,
       "both": false
     },
     {
@@ -83,8 +83,8 @@
       "group": "대형주",
       "ret_1w": -4.6,
       "ret_1m": -18.3,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -226.1,
+      "inst": 84.1,
       "both": false
     },
     {
@@ -92,8 +92,8 @@
       "group": "대형주",
       "ret_1w": 2.6,
       "ret_1m": -6.4,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -49.5,
+      "inst": 89.4,
       "both": false
     },
     {
@@ -119,8 +119,8 @@
       "group": "소부장",
       "ret_1w": -7.4,
       "ret_1m": -32.7,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": 24.9,
+      "inst": -39.5,
       "both": false
     },
     {
@@ -128,8 +128,8 @@
       "group": "소부장",
       "ret_1w": -8.3,
       "ret_1m": -29.0,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -7.8,
+      "inst": -59.3,
       "both": false
     },
     {
@@ -155,8 +155,8 @@
       "group": "소부장",
       "ret_1w": -8.9,
       "ret_1m": -23.6,
-      "frgn": 0.0,
-      "inst": 0.0,
+      "frgn": -7.8,
+      "inst": -65.9,
       "both": false
     },
     {
