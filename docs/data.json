@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21 11:00 KST",
+  "updated": "2026-11-22 10:00 KST",
   "week": "W47",
   "sox": {
     "close": 8408.59,
@@ -11,17 +11,17 @@
   "predictors": {
     "NQ=F": {
       "name": "나스닥 선물",
-      "close": 25291.0,
-      "change_pct": -4.92,
-      "ret_1w": -9.8,
-      "ret_1m": -14.8
+      "close": 25126.5,
+      "change_pct": -5.54,
+      "ret_1w": -10.4,
+      "ret_1m": -16.3
     },
     "KORU": {
       "name": "KORU ETF",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN
+      "close": 4.76,
+      "change_pct": -25.04,
+      "ret_1w": -38.0,
+      "ret_1m": -60.1
     },
     "^SOX": {
       "name": "SOX 반도체지수",
@@ -42,19 +42,19 @@
   "us_stocks": [
     {
       "ticker": "NVDA",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN,
+      "close": 125.53,
+      "change_pct": -14.01,
+      "ret_1w": -22.9,
+      "ret_1m": -43.4,
       "volume_ratio": 1.5,
       "near_52w_high": false
     },
     {
       "ticker": "AMZN",
-      "close": NaN,
-      "change_pct": NaN,
-      "ret_1w": NaN,
-      "ret_1m": NaN,
+      "close": 246.82,
+      "change_pct": -4.1,
+      "ret_1w": -7.4,
+      "ret_1m": -5.9,
       "volume_ratio": 1.5,
       "near_52w_high": false
     }
